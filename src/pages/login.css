@@ -1,0 +1,86 @@
+.login-container {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #1890ff 0%, #722ed1 100%);
+  overflow: hidden;
+  position: relative;
+}
+
+.login-container::before {
+  content: '';
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  top: -50%;
+  left: -50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 60%);
+  animation: rotate 30s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  padding: 0 20px;
+}
+
+.login-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+}
+
+.login-title {
+  text-align: center;
+  margin-bottom: 30px !important;
+  color: #1890ff;
+}
+
+.login-form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.forgot-link {
+  color: #1890ff;
+}
+
+.forgot-link:hover {
+  color: #40a9ff;
+}
+
+.login-button {
+  width: 100%;
+  height: 40px;
+  font-size: 16px;
+}
+
+.input-icon {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+/* 响应式调整 */
+@media screen and (max-width: 576px) {
+  .login-content {
+    padding: 0 16px;
+  }
+  
+  .login-card {
+    padding: 24px 16px;
+  }
+} 
