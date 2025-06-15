@@ -1,54 +1,75 @@
-# React + TypeScript + Vite
+# React Admin 管理后台项目
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+本项目基于 React、TypeScript 和 Vite 构建，适合作为中后台管理系统的基础模板。项目结构清晰，便于扩展和维护，支持模块化开发和热更新。
 
-Currently, two official plugins are available:
+## 项目功能简介
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 基于 React + TypeScript，类型安全
+- 使用 Vite 作为构建工具，启动快、热更新流畅
+-
 
-## Expanding the ESLint configuration
+## 目录结构说明
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```
+src/
+├── App.tsx           // 应用主入口，路由与全局布局
+├── main.tsx          // 入口文件，挂载 React 应用
+├── index.css         // 全局样式
+├── App.css           // App 组件样式
+├── assets/           // 静态资源（图片、图标等）
+├── components/       // 公共组件
+├── pages/            // 页面模块（如登录页、仪表盘等）
+├── services/         // 接口请求与服务层
+├── store/            // 状态管理（如 Redux）
+├── types/            // TypeScript 类型定义
+├── utils/            // 工具函数
+└── vite-env.d.ts     // Vite 环境类型声明
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 项目运行步骤
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+1. **安装依赖**
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+   请确保已安装 Node.js（建议 v18.20.7）。
+
+   ```bash
+   yarn install
+   ```
+
+2. **本地开发启动**
+
+   ```bash
+   yarn dev
+   ```
+
+   启动后访问终端输出的本地地址（如 http://localhost:5173）。
+
+3. **打包构建**
+
+   ```bash
+   npm run build
+   # 或
+   yarn build
+   ```
+
+   构建产物会输出到 dist 目录。
+
+4. **预览构建结果**
+
+   ```bash
+   npm run preview
+   # 或
+   yarn preview
+   ```
+
+## 其他说明
+
+- 推荐使用 VSCode 编辑器，并安装相关 TypeScript/ESLint 插件以获得更好的开发体验。
+- 
+- 
+
+---
+
+
+
+

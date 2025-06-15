@@ -86,14 +86,14 @@ const users: User[] = [
     username: 'admin',
     password: 'admin',
     role: 'admin',
-    permissions: ['user:view', 'role:edit'],
+    permissions: ['user:add', 'user:edit', 'user:delete'],
   },
   {
     id: 2,
     username: 'manager',
     password: 'manager',
     role: 'manage',
-    permissions: ['user:view'],
+    permissions: ['user:add'],
   },
   {
     id: 3,

@@ -71,11 +71,6 @@ const AppLayout: React.FC = () => {
         },
     ];
 
-    // const availableMenus = menuConfig.filter((item) =>
-    //     item.roles.includes(userInfo?.role)
-    // );
-
-
     const availableMenus = menuConfig.filter((item) =>
         userInfo?.role ? item.roles.includes(userInfo.role) : false
     );
