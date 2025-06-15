@@ -9,8 +9,11 @@ import Forbidden from './pages/403';
 
 import AuthGuard from './components/AuthGuard';
 import UserList from './pages/user/userList';
-import RoleManage from './pages/manage/roleManage';
+import RoleManage from './pages/admin/roleManage';
+import PermissionManage from './pages/admin/permissionsManage';
 import Dashboard from './pages/dashboard';
+import AppLayout from './pages/Layout/index'
+import Chart from './pages/chart';
 
 // 这里之后可以添加更多的页面组件
 const UserManagement = () => <div>User Management</div>;
@@ -20,61 +23,39 @@ const App: React.FC = () => {
     <Provider store={store}>
       <ConfigProvider locale={zhCN}>
         <Router>
+
           <Routes>
-            {/* 公共路由 */}
+            {/* 登录与错误页为顶层页面 */}
             <Route path="/login" element={<Login />} />
             <Route path="/403" element={<Forbidden />} />
-            {/* <Route path="/dashboard" element={<Dashboard />} /> */}
-            <Route
-              path="/"
-              element={
-                <AuthGuard>
-                  <Dashboard />
-                </AuthGuard>
-              }
-            />
 
-            <Route
-              path="/users"
-              element={
+            {/* 布局内所有页面统一由 Layout 包裹 */}
+            <Route path="/" element={<AuthGuard><AppLayout /></AuthGuard>}>
+              <Route index element={<Dashboard />} />
+              <Route path="chart" element={<Chart />} />
+              <Route path="users" element={
                 <AuthGuard requiredRoles={['admin', 'manage']}>
                   <UserList />
                 </AuthGuard>
-              }
-            />
-
-            <Route
-              path="/roles"
-              element={
+              } />
+              <Route path="roles" element={
                 <AuthGuard requiredRoles={['admin']}>
                   <RoleManage />
                 </AuthGuard>
-              }
-            />
-
-            {/* 需要认证的路由 */}
-            {/* <Route
-              path="/"
-              element={
-                <AuthGuard>
-                  <Dashboard />
+              } />
+              <Route path="permissions" element={
+                <AuthGuard requiredRoles={['admin']}>
+                  <PermissionManage />
                 </AuthGuard>
-              }
-            /> */}
+              } />
+            </Route>
 
-            {/* 需要特定权限的路由 */}
-            {/* <Route
-              path="/users"
-              element={
-                <AuthGuard requiredPermissions={['user:manage']}>
-                  <UserManagement />
-                </AuthGuard>
-              }
-            /> */}
 
             {/* 404重定向 */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+
+
         </Router>
       </ConfigProvider>
     </Provider>
@@ -82,3 +63,42 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+
+
+{/* <Routes> */ }
+{/* 公共路由 */ }
+{/* <Route path="/login" element={<Login />} />
+<Route path="/403" element={<Forbidden />} /> */}
+{/* <Route path="/dashboard" element={<Dashboard />} /> */ }
+{/* <Route
+  path="/"
+  element={
+    <AuthGuard>
+      <Dashboard />
+    </AuthGuard>
+  }
+/>
+
+<Route
+  path="/users"
+  element={
+    <AuthGuard requiredRoles={['admin', 'manage']}>
+      <UserList />
+    </AuthGuard>
+  }
+/>
+
+<Route
+  path="/roles"
+  element={
+    <AuthGuard requiredRoles={['admin']}>
+      <RoleManage />
+    </AuthGuard>
+  }
+/> */}
+
+
+{/* 404重定向 */ }
+{/* <Route path="*" element={<Navigate to="/" replace />} />
+</Routes> */}
