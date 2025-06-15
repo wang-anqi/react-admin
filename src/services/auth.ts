@@ -1,5 +1,4 @@
 import axios from 'axios';
-import type { LoginParams, LoginResponse, RegisterParams, ChangePasswordParams, UserInfo } from '../types/user';
 
 const API_URL = 'http://localhost:5000/api';  // 这里替换为你的实际API地址
 
@@ -41,40 +40,3 @@ authApi.interceptors.response.use(
 
 export default authApi;
 
-// 登录
-// export const login = async (params: LoginParams): Promise<LoginResponse> => {
-//   const response = await authApi.post<LoginResponse>('/auth/login', params);
-//   return response.data;
-// };
-
-// 注册
-// export const register = async (params: RegisterParams): Promise<void> => {
-//   await authApi.post('/auth/register', params);
-// };
-
-// 登出
-// export const logout = async (): Promise<void> => {
-//   await authApi.post('/auth/logout');
-//   localStorage.removeItem('token');
-// };
-
-// 获取当前用户信息
-// export const getCurrentUser = async (): Promise<UserInfo> => {
-//   const response = await authApi.get<UserInfo>('/auth/me');
-//   return response.data;
-// };
-
-// 修改密码
-// export const changePassword = async (params: ChangePasswordParams): Promise<void> => {
-//   await authApi.post('/auth/change-password', params);
-// };
-
-// 发送重置密码邮件
-// export const sendResetPasswordEmail = async (email: string): Promise<void> => {
-//   await authApi.post('/auth/forgot-password', { email });
-// };
-
-// 重置密码
-// export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
-//   await authApi.post('/auth/reset-password', { token, newPassword });
-// }; 
