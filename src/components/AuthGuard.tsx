@@ -26,12 +26,12 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
   }
 
   // ✅ 检查角色权限
-  const hasRole = requiredRoles.length === 0 || requiredRoles.includes(userInfo.role);
+  const hasRole = requiredRoles.length === 0 || requiredRoles.includes(userInfo.data.role);
 
   // ✅ 检查操作权限（如果后续你扩展了权限点控制）
   const hasPermissions =
     requiredPermissions.length === 0 ||
-    requiredPermissions.every(p => userInfo.permissions?.includes(p));
+    requiredPermissions.every(p => userInfo.data.permissions?.includes(p));
 
   if (!hasRole || !hasPermissions) {
     return <Navigate to="/403" replace />;
