@@ -54,7 +54,11 @@ const AppLayout: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const location = useLocation();
-
+    console.log('userinfo',userInfo);
+    const  data   = userInfo?.data;
+    
+    
+    
     //   退出登录
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -72,7 +76,7 @@ const AppLayout: React.FC = () => {
     ];
 
     const availableMenus = menuConfig.filter((item) =>
-        userInfo?.role ? item.roles.includes(userInfo.role) : false
+        data?.role ? item.roles.includes(data.role) : false
     );
 
     // 默认映射 / 到 /dashboard
