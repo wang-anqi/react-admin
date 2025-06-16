@@ -70,17 +70,31 @@ import axiosInstance from '../services/auth';
 // 定义用户信息类型
 export interface UserInfo {
   id: number;
+  token:string;
   username: string;
   role: 'admin' | 'manage' | 'user';
   permissions: string[];
 }
+
+// export interface UserInfo{
+//   token:string;
+//   userInfo:{
+//     data:{
+//       id:string;
+//       role: 'admin' | 'manage' | 'user';
+//       permissions: string[];
+//     }
+//   }
+  
+// }
 
 // 异步获取用户信息
 export const fetchUserInfo = createAsyncThunk<UserInfo>(
   'user/fetchUserInfo',
   async () => {
     const res = await axiosInstance.get<UserInfo>('/auth/me');
-    return res.data;
+
+    return res.data
   }
 );
 

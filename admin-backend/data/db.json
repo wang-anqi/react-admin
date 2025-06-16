@@ -1,0 +1,44 @@
+{
+  "users": [
+    {
+      "id": "user-001",
+      "username": "zhangsan",
+      "email": "zhangsan@example.com",
+      "password": "$2a$10$GvSqV7hgbFd//QxfTeNKVek71/qKPMTfmckPsxBZvsuasIu.BpSgC",
+      "role": "user",
+      "status": "active",
+      "permissions": [
+        "user:add"
+      ],
+      "createdAt": "2025-06-16T09:11:13.969Z",
+      "updatedAt": "2025-06-16T09:11:13.969Z"
+    },
+    {
+      "id": "user-002",
+      "username": "lisi",
+      "email": "lisi@example.com",
+      "password": "$2a$10$G792PM4/4SFrmyWpJKpWS.p8LxKhnRn/NSWVNlKKhJXw2RMv0jD9q",
+      "permissions": [
+        "user:add"
+      ],
+      "role": "user",
+      "status": "active",
+      "createdAt": "2025-06-16T09:11:14.022Z",
+      "updatedAt": "2025-06-16T09:11:14.022Z"
+    }
+  ],
+  "admins": [
+    {
+      "id": "admin-001",
+      "username": "admin",
+      "role": "admin",
+      "password": "$2a$10$NnscIJjW7pblRmkjAasJZucomthP5A1qjVp8JuF58k6QJJlpxA4bq",
+      "permissions": [
+        "user:add",
+        "user:edit",
+        "user:delete"
+      ],
+      "createdAt": "2025-06-16T09:11:13.916Z"
+    }
+  ]
+}

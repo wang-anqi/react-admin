@@ -47,8 +47,8 @@ const UserList: React.FC = () => {
   }
 
   useEffect(() => {
-    fetchUsers();
-    deleteUser();
+    // fetchUsers();
+    // deleteUser();
     
   }, []);
 

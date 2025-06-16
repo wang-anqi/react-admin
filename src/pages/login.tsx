@@ -51,7 +51,8 @@ const Login: React.FC = () => {
 
       console.log('登录请求响应:', res.data);
 
-      const { token, role } = res.data;
+      const { token, user } = res.data;
+      const {role } = user;
 
       if (token && role) {
         // 保存 token 和 role
@@ -64,7 +65,7 @@ const Login: React.FC = () => {
         // /auth/me  异步获取user数据，更新userSlice中用户信息
         // await dispatch(fetchUserInfo());
         const result = await dispatch(fetchUserInfo());
-        console.log(result);
+        console.log('result',result);
 
         // 等待 Redux 异步 Action 完成后，确认成功再做跳转，确保用户信息加载成功，从而避免「登录后立即跳转却被 AuthGuard 判定未登录」的问题。
         // 使用 Redux Toolkit 自带的 fulfilled.match(result) 判断请求是否成功
@@ -105,9 +106,9 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
-    const data = getUser();
-
-    console.log('异步请求', data);
+  //  const data = getUser();
+ 
+    console.log('异步请求');
 
   }, [])
 
