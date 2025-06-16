@@ -40,8 +40,16 @@ const UserList: React.FC = () => {
     }
   };
 
+
+  const deleteUser = async ()=>{
+    '调用delete'
+    await axiosInstance.delete('/users//deleteUser/1')
+  }
+
   useEffect(() => {
     fetchUsers();
+    deleteUser();
+    
   }, []);
 
   const columns = [

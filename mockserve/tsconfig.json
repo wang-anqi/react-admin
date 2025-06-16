@@ -2,8 +2,9 @@
   "compilerOptions": {
     "outDir": "./dist",
     "rootDir": "./src",
-    "moduleResolution": "node",
     "esModuleInterop": true,
+    // "module": "node18",
+		"moduleResolution": "node16",
     /* Visit https://aka.ms/tsconfig to read more about this file */
     /* Projects */
     // "incremental": true,                              /* Save .tsbuildinfo files to allow for incremental compilation of projects. */
