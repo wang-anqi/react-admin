@@ -4,7 +4,7 @@ export interface User {
   username: string;
   email: string;
   password: string;
-  role: 'admin' | 'user';
+  role:   'manage' | 'user';
   status: 'active' | 'inactive';
   createdAt: string;
 
@@ -12,6 +12,7 @@ export interface User {
   permissions: string[];
   token?: string;
 }
+
 
 // 数据库结构定义
 export interface Database {
@@ -26,11 +27,18 @@ export interface Admin {
   username: string;
   permissions: string[];
   role: 'admin';
+  email:string;
   password: string;
   createdAt: string;
   token?: string;
 }
 
+export interface UsersList {
+  id: string;
+  username: string;
+  email?: string;
+  role: 'admin' | 'manage' | 'user';
+}
 // 登录请求体
 export interface LoginRequest {
   username: string;

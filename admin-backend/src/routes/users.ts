@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import { db, generateId } from '../database/db.js';
 import { hashPassword } from '../utils/auth.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import type { User, CreateUserRequest, UpdateUserRequest, ApiResponse } from '../types/index.js';
+import type { User, CreateUserRequest, UpdateUserRequest, ApiResponse, UsersList } from '../types/index.js';
 
 const router = Router();
 
@@ -14,20 +14,37 @@ router.use(authenticateToken);
  * GET /api/users/userslist
  * 获取用户列表数据
  */
-router.get('/userslist', async (req: Request, res: Response<ApiResponse<User[]>>) => {
+router.get('/userslist', async (req: Request, res: Response<ApiResponse<UsersList[]>>) => {
   try {
     await db.read();
-    
+
     // 移除密码字段后返回用户列表
-    const users = db.data!.users.map(user => {
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword;
-    });
+    const users = db.data!.users.map(user => (
+      {
+        id: user.id, // 或者使用你自己的 id 映射逻辑
+        username: user.username,
+        email: user.email,
+        role: user.role as 'user' | 'manage' | 'admin'
+      }
+    )
+
+    );
+    const admins = db.data!.admins.map((admin, index) => (
+      {
+        id: admin.id,
+        username: admin.username,
+        // 有些 admin 没有 email 字段，这里可以省略
+        role: admin.role as 'user' | 'manage' | 'admin',
+      }
+    )
+
+    )
+    const allUsers: UsersList[] = [...users, ...admins]
 
     res.json({
       success: true,
       message: '获取用户列表成功',
-      data: users as User[]
+      data: allUsers
     });
   } catch (error) {
     console.error('获取用户列表错误:', error);
@@ -81,7 +98,7 @@ router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>,
     const hashedPassword = await hashPassword(password);
     const newUser: User = {
       id: generateId('user'),
-      permissions: role==='user'?['user:add']: ['user:add', 'user:edit', 'user:delete'],
+      permissions: role === 'user' ? ['user:add'] : ['user:add', 'user:edit', 'user:delete'],
       username,
       email,
       password: hashedPassword,

@@ -31,7 +31,9 @@ const UserList: React.FC = () => {
       const res = await axiosInstance.get('/users/usersList');
       //res.data.data 注意数据包裹关系
       setUsers(res.data.data);
-      console.log(res.data);
+      console.log('res.data.data',res.data.data);
+      
+    
       
     } catch (error) {
       message.error('获取用户列表失败');
@@ -42,12 +44,13 @@ const UserList: React.FC = () => {
 
 
   const deleteUser = async ()=>{
-    '调用delete'
-    await axiosInstance.delete('/users//deleteUser/1')
+    // '调用delete'
+    console.log('删除用户');
+    
   }
 
   useEffect(() => {
-    // fetchUsers();
+    fetchUsers();
     // deleteUser();
     
   }, []);
@@ -92,7 +95,6 @@ const UserList: React.FC = () => {
       <Card>
         <HasPermission
           code="user:add"
-          noMatch={<span style={{ color: '#ccc' }}>无新增权限</span>}
         >
           <Button type="primary" style={{ marginBottom: 16 }}>新增用户</Button>
         </HasPermission>
