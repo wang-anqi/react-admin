@@ -21,19 +21,19 @@ const menuConfig = [
         key: '/dashboard',
         label: '仪表盘',
         icon: <DashboardOutlined />,
-        roles: ['admin', 'manage', 'user'],
+        roles: ['admin', 'manager', 'user'],
     },
     {
         key: '/chart',
         label: '图表',
         icon: <BarChartOutlined />,
-        roles: ['admin', 'manage', 'user'],
+        roles: ['admin', 'manager', 'user'],
     },
     {
         key: '/users',
         label: '用户管理',
         icon: <TeamOutlined />,
-        roles: ['admin', 'manage'],
+        roles: ['admin', 'manager'],
     },
     {
         key: '/roles',
@@ -54,7 +54,7 @@ const AppLayout: React.FC = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const location = useLocation();
-    console.log('userinfo',userInfo);
+    // console.log('userinfo',userInfo);
     const  data   = userInfo?.data;
     
     

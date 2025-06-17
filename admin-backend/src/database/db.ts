@@ -3,7 +3,7 @@ import { JSONFile } from 'lowdb/node';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
-import type { Database, User, Admin } from '../types/index.js';
+import type { Database, User,  Role } from '../types/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -13,8 +13,8 @@ const file = join(__dirname, '../../data/db.json');
 // 配置 lowdb
 const adapter = new JSONFile<Database>(file);
 export const db = new Low<Database>(adapter, {
-  users: [], 
-  admins: []  
+  userslist: [],
+  roles: []
 });
 
 // 初始化数据库
@@ -25,125 +25,98 @@ export async function initDatabase(): Promise<void> {
   // 如果数据库为空，创建默认数据
   if (!db.data) {
     db.data = {
-      users: [],
-      admins: []
+
+      userslist: [],
+      roles: []
     };
   }
 
+
   // 创建默认管理员账户（如果不存在）
-  if (db.data.admins.length === 0) {
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-    const defaultAdmin: Admin = {
-      id: 'admin-001',
-      username: 'admin',
-      role:'admin',
-      email: 'wangzhangsan@example.com',
-      password: hashedPassword,
-      permissions: ['user:add', 'user:edit', 'user:delete'],
-      createdAt: new Date().toISOString()
-    };
+  if (db.data.roles.length === 0) {
     
-    db.data.admins.push(defaultAdmin);
+    const defaultRole: Role = [
+      {
+        "id": 1,
+        "name": "admin",
+        "description": "系统管理员，拥有全部权限",
+        "permissions": [
+          "user:add",
+          "user:edit",
+          "user:delete",
+          "role:add",
+          "role:edit",
+          "role:delete",
+          "permission:assign"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "managerBoss",
+        "description": "业务高级管理员，拥有部分用户列表管理权限",
+        "permissions": [
+          "user:add",
+          "user:edit",
+          "user:delete"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "manager",
+        "description": "业务管理员，具有部分用户列表管理权限",
+        "permissions": [
+          "user:add"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "user",
+        "description": "普通用户，仅具查看权限",
+        "permissions": []
+      }
+    ]
+
+    db.data.roles.push(defaultRole);
   }
 
   // 创建一些测试用户数据（如果不存在）
-  if (db.data.users.length === 0) {
+  if (db.data.userslist.length === 0) {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
     const testUsers: User[] = [
       {
-        id: 'usersMember-001',
-        username: 'zhangsan',
-        email: 'zhangsan@example.com',
-        password: await bcrypt.hash('123456', 10),
-        role: 'manage',
-        status: 'active',
-        permissions: ['user:add'],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        "id": "usersMember-001",
+        "username": "manager",
+        "email": "zhangsan@example.com",
+        "password": hashedPassword,
+        "role": "manager",
+        "status": "active",
+        "createdAt": "2025-06-17T06:43:11.653Z",
+       
       },
       {
-        id: 'usersMember-002',
-        username: 'lisi',
-        email: 'lisi@example.com',
-        password: await bcrypt.hash('123456', 10),
-        permissions: ['user:add'],
-        role: 'manage',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        "id": "usersMember-003",
+        "username": "user",
+        "email": "zhangsanwewad@example.com",
+        "password": hashedPassword,
+        "role": "user",
+        "status": "active",
+        "createdAt": "2025-06-17T06:43:11.759Z",
       },
       {
-        id: 'usersMember-003',
-        username: 'zhangsanwewad',
-        email: 'zhangsanwewad@example.com',
-        password: await bcrypt.hash('123456', 10),
-        role: 'user',
-        status: 'active',
-        permissions: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'usersMember-004',
-        username: 'wanglisi',
-        email: 'wanglisi@example.com',
-        password: await bcrypt.hash('123456', 10),
-        permissions: [],
-        role: 'user',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'usersMember-004',
-        username: 'user',
-        email: 'user@example.com',
-        password: await bcrypt.hash('123456', 10),
-        permissions: [],
-        role: 'user',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'usersMember-005',
-        username: 'sfeflisi',
-        email: 'sfeflisizhang@example.com',
-        password: await bcrypt.hash('123456', 10),
-        permissions:  [],
-        role: 'user',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      {
-        id: 'usersMember-006',
-        username: 'wang',
-        email: 'anqi@example.com',
-        password: await bcrypt.hash('123456', 10),
-        permissions:  [ 'user:edit'],
-        role: 'manage',
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        "id": "admin-001",
+        "username": "admin",
+        "role": "admin",
+        "email": "wangzhangsan@example.com",
+        "password":hashedPassword,
+        "status": "active",
+        "createdAt": "2025-06-17T06:43:11.600Z"
       }
     ];
 
-    db.data.users.push(...testUsers);
+    db.data.userslist.push(...testUsers);
   }
 
-  // if (db.data.usersList.length === 0) {
   
-  //   const defaultAdmin: Admin = {
-  //     id: 'admin-001',
-  //     username: 'admin',
-  //     role:'admin',
-  //     password: hashedPassword,
-  //     permissions: ['user:add', 'user:edit', 'user:delete'],
-  //     createdAt: new Date().toISOString()
-  //   };
-    
-  //   db.data.admins.push(defaultAdmin);
-  // }
 
   // 写入数据库
   await db.write();

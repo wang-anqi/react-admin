@@ -1,44 +1,44 @@
 import { Router } from 'express';
 import type { Request, Response } from 'express';
 import { db } from '../database/db.js';
-import { comparePassword, generateToken ,verifyToken} from '../utils/auth.js';
+import { comparePassword, generateToken, verifyToken } from '../utils/auth.js';
 import type { LoginRequest, LoginResponse, ApiResponse } from '../types/index.js';
-import { message } from 'antd';
+
 
 const router = Router();
 
 // 用户类型定义
-interface User {
-  id: number;
-  username: string;
-  password: string;
-  role: string;
-  permissions: string[];
-}
+// interface User {
+//   id: number;
+//   username: string;
+//   password: string;
+//   role: string;
+//   permissions: string[];
+// }
 
-const users: User[] = [
-  {
-    id: 1,
-    username: 'admin',
-    password: 'admin',
-    role: 'admin',
-    permissions: ['user:add', 'user:edit', 'user:delete'],
-  },
-  {
-    id: 2,
-    username: 'manager',
-    password: 'manager',
-    role: 'manage',
-    permissions: ['user:add'],
-  },
-  {
-    id: 3,
-    username: 'user',
-    password: 'user',
-    role: 'user',
-    permissions: [],
-  },
-];
+// const users: User[] = [
+//   {
+//     id: 1,
+//     username: 'admin',
+//     password: 'admin',
+//     role: 'admin',
+//     permissions: ['user:add', 'user:edit', 'user:delete'],
+//   },
+//   {
+//     id: 2,
+//     username: 'manager',
+//     password: 'manager',
+//     role: 'manager',
+//     permissions: ['user:add'],
+//   },
+//   {
+//     id: 3,
+//     username: 'user',
+//     password: 'user',
+//     role: 'user',
+//     permissions: [],
+//   },
+// ];
 
 /**
  * POST /api/auth/login
@@ -58,33 +58,16 @@ router.post('/login', async (req: Request<{}, LoginResponse, LoginRequest>, res:
 
     await db.read();
 
-    // 先检查管理员
-    const admin = db.data!.admins.find(admin => admin.username === username);
-    if (admin) {
-      const isValidPassword = await comparePassword(password, admin.password);
-      if (isValidPassword) {
-        const token = generateToken({
-          id: admin.id,
-          username: admin.username,
-          role: 'admin'
-        });
-        // 返回的结果
-        res.json({
-          success: true,
-          message: '登录成功',
-          token,
-          user: {
-            id: admin.id,
-            username: admin.username,
-            role: 'admin' as const
-          }
-        });
-        return;
-      }
+
+    function getPermissionsByRole(roleName: string) {
+      const roles = db.data.roles.flat?.() || [];
+      const role = roles.find((r: any) => r.name === roleName);
+      return role?.permissions ?? [];
     }
 
-    // 检查普通用户
-    const user = db.data!.users.find(user => user.username === username);
+    // 找到用户
+    const user = db.data.userslist.find((u: any) => u.username === username);
+
     if (user) {
       const isValidPassword = await comparePassword(password, user.password);
       if (isValidPassword) {
@@ -102,7 +85,12 @@ router.post('/login', async (req: Request<{}, LoginResponse, LoginRequest>, res:
           role: user.role
         });
         user.token = token; // 保存到 db
+        // 根据角色找permission
+        const permissions = getPermissionsByRole(user.role);
+        
+
         await db.write();
+
 
         res.json({
           success: true,
@@ -113,9 +101,8 @@ router.post('/login', async (req: Request<{}, LoginResponse, LoginRequest>, res:
             username: user.username,
             email: user.email,
             role: user.role,
-            status: user.status,
+            status: 'active',
             createdAt: user.createdAt,
-            updatedAt: user.updatedAt
           }
         });
         return;
@@ -148,40 +135,7 @@ router.post('/logout', (req: Request, res: Response<ApiResponse>) => {
   });
 });
 
-/**
- * GET /api/auth/me
- * 获取当前用户信息
- */
-// router.get('/me', async (req: Request, res: Response) => {
-//   try {
-//     const token = req.headers.authorization?.split(' ')[1];
-//     if (!token) {
-//       return res.status(401).json({ message: '未提供 token' });
-//     }
 
-//     await db.read();
-
-//     const user = db.data?.users.find(u => u.token === token) ||
-//                  db.data?.admins.find(a => a.token === token);
-
-//     if (!user) {
-//       return res.status(401).json({ message: '无效 token 或用户不存在' });
-//     }
-
-//     res.json({
-//       id: user.id,
-//       username: user.username,
-//       role: user.role,
-//       permissions: user.permissions,
-//       createdAt: user.createdAt
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       success: false,
-//       message: '服务器内部错误'
-//     });
-//   }
-// });
 router.get('/me', async (req, res) => {
   try {
     const authHeader = req.headers.authorization;
@@ -205,8 +159,15 @@ router.get('/me', async (req, res) => {
 
     await db.read();
 
-    const user = db.data?.users.find(u => u.id === payload.id) ||
-                 db.data?.admins.find(a => a.id === payload.id);
+
+    
+    function getPermissionsByRole(roleName: string) {
+      const roles = db.data.roles.flat?.() || [];
+      const role = roles.find((r: any) => r.name === roleName);
+      return role?.permissions ?? [];
+    }
+
+    const user = db.data?.userslist.find(u => u.id === payload.id) 
 
     if (!user) {
       return res.status(404).json({
@@ -215,6 +176,7 @@ router.get('/me', async (req, res) => {
       });
     }
 
+    const permissions = getPermissionsByRole(user.role);
     return res.json({
       success: true,
       message: '获取用户信息成功',
@@ -222,8 +184,8 @@ router.get('/me', async (req, res) => {
         id: user.id,
         username: user.username,
         role: user.role ?? 'user',
-        permissions: user.permissions ?? [],
-       
+        permissions,
+
       }
     });
   } catch (error) {

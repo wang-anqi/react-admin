@@ -34,7 +34,7 @@ const App: React.FC = () => {
               <Route index element={<Dashboard />} />
               <Route path="chart" element={<Chart />} />
               <Route path="users" element={
-                <AuthGuard requiredRoles={['admin', 'manage']}>
+                <AuthGuard requiredRoles={['admin', 'manager']}>
                   <UserList />
                 </AuthGuard>
               } />
@@ -83,7 +83,7 @@ export default App;
 <Route
   path="/users"
   element={
-    <AuthGuard requiredRoles={['admin', 'manage']}>
+    <AuthGuard requiredRoles={['admin', 'manager']}>
       <UserList />
     </AuthGuard>
   }

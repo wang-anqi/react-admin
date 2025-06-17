@@ -3,12 +3,15 @@ import type { Request, Response } from 'express';
 import { db, generateId } from '../database/db.js';
 import { hashPassword } from '../utils/auth.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
-import type { User, CreateUserRequest, UpdateUserRequest, ApiResponse, UsersList } from '../types/index.js';
+import type { User, CreateUserRequest, UpdateUserRequest, ApiResponse,UsersList } from '../types/index.js';
 
 const router = Router();
 
 // 应用认证中间件到所有用户路由
 router.use(authenticateToken);
+
+
+
 
 /**
  * GET /api/users/userslist
@@ -18,33 +21,28 @@ router.get('/userslist', async (req: Request, res: Response<ApiResponse<UsersLis
   try {
     await db.read();
 
+
+
+    function getPermissionsByRole(roleName: string) {
+      const roles = db.data.roles.flat?.() || [];
+      const role = roles.find((r: any) => r.name === roleName);
+      return role?.permissions ?? [];
+    }
+
     // 移除密码字段后返回用户列表
-    const users = db.data!.users.map(user => (
+    const usersList = db.data!.userslist.map(user => (
       {
         id: user.id, // 或者使用你自己的 id 映射逻辑
         username: user.username,
         email: user.email,
-        role: user.role as 'user' | 'manage' | 'admin'
+        role: user.role
       }
-    )
-
-    );
-    const admins = db.data!.admins.map((admin, index) => (
-      {
-        id: admin.id,
-        username: admin.username,
-        // 有些 admin 没有 email 字段，这里可以省略
-        role: admin.role as 'user' | 'manage' | 'admin',
-      }
-    )
-
-    )
-    const allUsers: UsersList[] = [...users, ...admins]
+    ));
 
     res.json({
       success: true,
       message: '获取用户列表成功',
-      data: allUsers
+      data: usersList
     });
   } catch (error) {
     console.error('获取用户列表错误:', error);
@@ -61,13 +59,14 @@ router.get('/userslist', async (req: Request, res: Response<ApiResponse<UsersLis
  */
 router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>, CreateUserRequest>, res: Response<ApiResponse<User>>) => {
   try {
-    const { username, email, password, role = 'user', status = 'active' } = req.body;
+    const { username, email, role, status = 'active', password = '123456' } = req.body;
 
     // 验证必填字段
-    if (!username || !email || !password) {
+    // 这边暂时只保证传过来的三个参数
+    if (!username || !email || !role) {
       res.status(400).json({
         success: false,
-        message: '用户名、邮箱和密码不能为空'
+        message: '用户名、邮箱和角色不能为空'
       });
       return;
     }
@@ -75,7 +74,7 @@ router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>,
     await db.read();
 
     // 检查用户名是否已存在
-    const existingUser = db.data!.users.find(user => user.username === username);
+    const existingUser = db.data!.userslist.find(user => user.username === username);
     if (existingUser) {
       res.status(409).json({
         success: false,
@@ -85,7 +84,7 @@ router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>,
     }
 
     // 检查邮箱是否已存在
-    const existingEmail = db.data!.users.find(user => user.email === email);
+    const existingEmail = db.data!.userslist.find(user => user.email === email);
     if (existingEmail) {
       res.status(409).json({
         success: false,
@@ -97,18 +96,18 @@ router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>,
     // 创建新用户
     const hashedPassword = await hashPassword(password);
     const newUser: User = {
-      id: generateId('user'),
-      permissions: role === 'user' ? ['user:add'] : ['user:add', 'user:edit', 'user:delete'],
+      id: generateId('userManage'),
       username,
       email,
       password: hashedPassword,
       role,
       status,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      // permissions: getPermissionsByRole(role),
+    
     };
 
-    db.data!.users.push(newUser);
+    db.data!.userslist.push(newUser);
     await db.write();
 
     // 返回用户信息时移除密码
@@ -147,7 +146,7 @@ router.put('/edituser/:id', requireAdmin, async (req: Request<{ id: string }, Ap
 
     await db.read();
 
-    const userIndex = db.data!.users.findIndex(user => user.id === id);
+    const userIndex = db.data!.userslist.findIndex(user => user.id === id);
     if (userIndex === -1) {
       res.status(404).json({
         success: false,
@@ -156,11 +155,11 @@ router.put('/edituser/:id', requireAdmin, async (req: Request<{ id: string }, Ap
       return;
     }
 
-    const existingUser = db.data!.users[userIndex];
+    const existingUser = db.data!.userslist[userIndex];
 
     // 如果要更新用户名，检查是否与其他用户冲突
     if (updateData.username && updateData.username !== existingUser.username) {
-      const usernameExists = db.data!.users.some(user => user.username === updateData.username && user.id !== id);
+      const usernameExists = db.data!.userslist.some(user => user.username === updateData.username && user.id !== id);
       if (usernameExists) {
         res.status(409).json({
           success: false,
@@ -172,7 +171,7 @@ router.put('/edituser/:id', requireAdmin, async (req: Request<{ id: string }, Ap
 
     // 如果要更新邮箱，检查是否与其他用户冲突
     if (updateData.email && updateData.email !== existingUser.email) {
-      const emailExists = db.data!.users.some(user => user.email === updateData.email && user.id !== id);
+      const emailExists = db.data!.userslist.some(user => user.email === updateData.email && user.id !== id);
       if (emailExists) {
         res.status(409).json({
           success: false,
@@ -186,10 +185,10 @@ router.put('/edituser/:id', requireAdmin, async (req: Request<{ id: string }, Ap
     const updatedUser: User = {
       ...existingUser,
       ...updateData,
-      updatedAt: new Date().toISOString()
+      
     };
 
-    db.data!.users[userIndex] = updatedUser;
+    db.data!.userslist[userIndex] = updatedUser;
     await db.write();
 
     // 返回用户信息时移除密码
@@ -227,7 +226,7 @@ router.delete('/deleteuser/:id', requireAdmin, async (req: Request<{ id: string 
 
     await db.read();
 
-    const userIndex = db.data!.users.findIndex(user => user.id === id);
+    const userIndex = db.data!.userslist.findIndex(user => user.id === id);
     if (userIndex === -1) {
       res.status(404).json({
         success: false,
@@ -237,7 +236,7 @@ router.delete('/deleteuser/:id', requireAdmin, async (req: Request<{ id: string 
     }
 
     // 删除用户
-    const deletedUser = db.data!.users.splice(userIndex, 1)[0];
+    const deletedUser = db.data!.userslist.splice(userIndex, 1)[0];
     await db.write();
 
     res.json({
@@ -263,7 +262,7 @@ router.get('/user/:id', async (req: Request<{ id: string }>, res: Response<ApiRe
 
     await db.read();
 
-    const user = db.data!.users.find(user => user.id === id);
+    const user = db.data!.userslist.find(user => user.id === id);
     if (!user) {
       res.status(404).json({
         success: false,

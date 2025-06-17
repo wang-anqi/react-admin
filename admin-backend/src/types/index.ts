@@ -1,24 +1,49 @@
 // 用户接口定义
+// export interface User {
+//   id: string;
+//   username: string;
+//   email: string;
+//   password: string;
+//   role: 'admin' | 'manager' | 'user';
+//   status: 'active' | 'inactive';
+//   createdAt: string;
+//   updatedAt: string;
+//   permissions: string[];
+//   token?: string;
+// }
+
 export interface User {
-  id: string;
+  id: string; // e.g. "admin-001"
   username: string;
   email: string;
   password: string;
-  role:   'manage' | 'user';
+  role: string; // 引用 roles.name
   status: 'active' | 'inactive';
   createdAt: string;
+  token?:string;
 
-  updatedAt: string;
-  permissions: string[];
-  token?: string;
 }
-
+export interface Role {
+  id: number;
+  name: string; // e.g. 'admin', 'managerBoss'
+  description: string;
+  permissions: string[];
+}
 
 // 数据库结构定义
 export interface Database {
-  users: User[];
-  admins: Admin[];
+  userslist: User[];
+  roles: Role[];
 }
+
+export interface UsersList {
+  id: string;
+  username: string;
+  email?: string;
+  role: string
+}
+
+
 
 // 管理员接口定义
 export interface Admin {
@@ -33,12 +58,7 @@ export interface Admin {
   token?: string;
 }
 
-export interface UsersList {
-  id: string;
-  username: string;
-  email?: string;
-  role: 'admin' | 'manage' | 'user';
-}
+
 // 登录请求体
 export interface LoginRequest {
   username: string;
@@ -58,7 +78,7 @@ export interface CreateUserRequest {
   username: string;
   email: string;
   password: string;
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'manager' | 'user';
   status?: 'active' | 'inactive';
 }
 
@@ -66,7 +86,7 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   username?: string;
   email?: string;
-  role?: 'admin' | 'user';
+  role?: 'admin' | 'manager' | 'user';
   status?: 'active' | 'inactive';
 }
 

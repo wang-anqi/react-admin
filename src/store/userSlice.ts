@@ -72,7 +72,7 @@ export interface UserInfo {
   id: number;
   token:string;
   username: string;
-  role: 'admin' | 'manage' | 'user';
+  role: 'admin' | 'manager' | 'user';
   permissions: string[];
 }
 
@@ -81,7 +81,7 @@ export interface UserInfo {
 //   userInfo:{
 //     data:{
 //       id:string;
-//       role: 'admin' | 'manage' | 'user';
+//       role: 'admin' | 'manager' | 'user';
 //       permissions: string[];
 //     }
 //   }

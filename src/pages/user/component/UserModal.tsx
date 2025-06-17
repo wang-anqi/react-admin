@@ -4,7 +4,7 @@ import { Modal, Form, Input, Select } from 'antd';
 export interface UserFormValues {
   username: string;
   email?: string;
-  role: 'admin' | 'manage' | 'user';
+  role: 'admin' | 'manager' | 'user';
 }
 
 interface UserModalProps {
@@ -21,6 +21,8 @@ const UserModal: React.FC<UserModalProps> = ({
   initialValues,
 }) => {
   const [form] = Form.useForm();
+  console.log('initialValues',initialValues);
+  
 
   // 初始化或重置表单
   useEffect(() => {
@@ -70,7 +72,7 @@ const UserModal: React.FC<UserModalProps> = ({
         >
           <Select placeholder="请选择角色">
             <Select.Option value="admin">管理员</Select.Option>
-            <Select.Option value="manage">经理</Select.Option>
+            <Select.Option value="manager">经理</Select.Option>
             <Select.Option value="user">普通用户</Select.Option>
           </Select>
         </Form.Item>

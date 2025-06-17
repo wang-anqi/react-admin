@@ -20,7 +20,7 @@ const AuthGuard: React.FC<AuthGuardProps> = ({
 
   // ✅ 未登录则跳转 /login
   if (!token || !userInfo) {
-    console.log('!token || !userInfo');
+    console.log('authGuard-没有token或者userInfo');
     
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

@@ -25,7 +25,7 @@ export const mockUsers: User[] = [
       username: 'manager',
       password: 'manager123',
       name: '部门管理员',
-      role: 'manage',
+      role: 'manager',
       email: 'manager@example.com',
       avatar: 'https://via.placeholder.com/64',
       permissions: [
