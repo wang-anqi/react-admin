@@ -61,6 +61,68 @@ src/
    # 或
    yarn preview
    ```
+## 接口数据设计
+1. **数据设计**
+```js
+export interface User {
+  id: string; // e.g. "admin-001"
+  username: string;
+  email: string;
+  password: string;
+  role: string; // 引用 roles.name
+  status: 'active' | 'inactive';
+  createdAt: string;
+  token?:string;
+
+}
+export interface Role {
+  id: number;
+  name: string; // e.g. 'admin', 'managerBoss'
+  description: string;
+  permissions: string[];
+}
+
+// 数据库结构定义
+export interface Database {
+  userslist: User[];
+  roles: Role[];
+}
+```
+permissions 字段由后端根据角色动态附加，不写死在用户上。
+
+2. **用户列表接口定义**
+```js
+export interface UsersList {
+  id: string;
+  username: string;
+  email?: string;
+  role: string
+}
+```
+
+3. **/me用户个人信息 接口数据**
+- 需要permission，借助roles来获取
+- 前端页面的路由权限和页面权限都是通过redux数据控制的，也就是这个接口的返回数据，所有这个接口的返回数据的结构和redux数据获取要保持一致
+```js
+   function getPermissionsByRole(roleName: string) {
+      const roles = db.data.roles.flat?.() || [];
+      const role = roles.find((r: any) => r.name === roleName);
+      return role?.permissions ?? [];
+    }
+    ···
+    const permissions = getPermissionsByRole(user.role);
+    return res.json({
+      success: true,
+      message: '获取用户信息成功',
+      data: {
+        id: user.id,
+        username: user.username,
+        role: user.role ?? 'user',
+        permissions,
+
+      }
+    });
+```
 
 ## 其他说明
 
