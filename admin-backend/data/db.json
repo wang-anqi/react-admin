@@ -4,17 +4,16 @@
       "id": "usersMember-001",
       "username": "manager",
       "email": "zhangsan@example.com",
-      "password": "$2a$10$YoL3Er8gxQVyeApc.0QFCO8NtBS4wIwvPwEQeTubFtukWiP.XjPFG",
+      "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "role": "manager",
       "status": "active",
-      "createdAt": "2025-06-17T06:43:11.653Z",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJzTWVtYmVyLTAwMSIsInVzZXJuYW1lIjoibWFuYWdlciIsInJvbGUiOiJtYW5hZ2VyIiwiaWF0IjoxNzUwMjE1OTA0LCJleHAiOjE3NTAzMDIzMDR9.sb5H89PjKxE813-YgNKRxCgz2mnHRKf4MZ5xpxBn3aQ"
+      "createdAt": "2025-06-17T06:43:11.653Z"
     },
     {
       "id": "usersMember-003",
       "username": "user",
       "email": "zhangsanwewad@example.com",
-      "password": "$2a$10$YoL3Er8gxQVyeApc.0QFCO8NtBS4wIwvPwEQeTubFtukWiP.XjPFG",
+      "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "role": "user",
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.759Z"
@@ -24,65 +23,54 @@
       "username": "admin",
       "role": "admin",
       "email": "wangzhangsan@example.com",
-      "password": "$2a$10$YoL3Er8gxQVyeApc.0QFCO8NtBS4wIwvPwEQeTubFtukWiP.XjPFG",
+      "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.600Z",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTAyMTU1NTQsImV4cCI6MTc1MDMwMTk1NH0.VpzAD0CG1uHE8wo9OP16LVWHgMMWfixsbEPEib6yk-c"
-    },
-    {
-      "id": "userManage-1750215919250-5bzs9ftjc",
-      "username": "anqi",
-      "email": "anqi@example.com",
-      "password": "$2a$10$YRoATa8b.I3BYVXqUnfHi.HmlTB6YlluF6GeFPireBBHAUHk0o91a",
-      "role": "user",
-      "status": "active",
-      "createdAt": "2025-06-18T03:05:19.250Z"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTAyMzUwODUsImV4cCI6MTc1MDMyMTQ4NX0.4l664wGfnSNfUyBPKlhZ_euUOAzdwtj_AwG7ejTj23M"
     }
   ],
   "roles": [
-    [
-      {
-        "id": 1,
-        "name": "admin",
-        "description": "系统管理员",
-        "permissionDes": "拥有全部权限",
-        "permissions": [
-          "user:add",
-          "user:edit",
-          "user:delete",
-          "role:add",
-          "role:edit",
-          "role:delete",
-          "permission:assign"
-        ]
-      },
-      {
-        "id": 2,
-        "name": "managerBoss",
-        "description": "业务高级管理员",
-        "permissionDes": "拥有部分用户列表管理权限",
-        "permissions": [
-          "user:add",
-          "user:edit",
-          "user:delete"
-        ]
-      },
-      {
-        "id": 3,
-        "name": "manager",
-        "description": "业务管理员",
-        "permissionDes": "具有部分用户列表管理权限",
-        "permissions": [
-          "user:add"
-        ]
-      },
-      {
-        "id": 3,
-        "name": "user",
-        "description": "普通用户",
-        "permissionDes": "仅具查看权限",
-        "permissions": []
-      }
-    ]
+    {
+      "id": 1,
+      "name": "admin",
+      "description": "系统管理员",
+      "permissionDes": "拥有全部权限",
+      "permissions": [
+        "user:add",
+        "user:edit",
+        "user:delete",
+        "role:add",
+        "role:edit",
+        "role:delete",
+        "permission:assign"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "managerBoss",
+      "description": "业务高级管理员",
+      "permissionDes": "拥有部分用户列表管理权限",
+      "permissions": [
+        "user:add",
+        "user:edit",
+        "user:delete"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "manager",
+      "description": "业务管理员",
+      "permissionDes": "具有部分用户列表管理权限",
+      "permissions": [
+        "user:add"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "user",
+      "description": "普通用户",
+      "permissionDes": "仅具查看权限",
+      "permissions": []
+    }
   ]
 }

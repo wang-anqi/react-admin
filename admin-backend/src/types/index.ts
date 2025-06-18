@@ -20,15 +20,15 @@ export interface User {
   role: string; // 引用 roles.name
   status: 'active' | 'inactive';
   createdAt: string;
-  token?:string;
+  token?: string;
 
 }
 export interface Role {
   id: number;
   name: string; // e.g. 'admin', 'managerBoss'
   description: string;
-  permissionDes:string;
   permissions: string[];
+  permissionDes?: string;
 }
 
 // 数据库结构定义
@@ -80,7 +80,7 @@ export interface CreateUserRequest {
   email: string;
   password: string;
   // role?: 'admin' | 'manager' | 'user';
-  role:string;
+  role: string;
   status?: 'active' | 'inactive';
 }
 
@@ -89,7 +89,7 @@ export interface UpdateUserRequest {
   username?: string;
   email?: string;
   // role?: 'admin' | 'manager' | 'user';
-  role:string;
+  role: string;
   status?: 'active' | 'inactive';
 }
 
