@@ -57,7 +57,76 @@ router.get('/userslist', async (req: Request, res: Response<ApiResponse<UsersLis
  * POST /api/users/adduser
  * 新增用户
  */
-router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>, CreateUserRequest>, res: Response<ApiResponse<User>>) => {
+// router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>, CreateUserRequest>, res: Response<ApiResponse<User>>) => {
+//   try {
+//     const { username, email, role, status = 'active', password = 'admin123' } = req.body;
+
+//     // 验证必填字段
+//     // 这边暂时只保证传过来的三个参数
+//     if (!username || !email || !role) {
+//       res.status(400).json({
+//         success: false,
+//         message: '用户名、邮箱和角色不能为空'
+//       });
+//       return;
+//     }
+
+//     await db.read();
+
+//     // 检查用户名是否已存在
+//     const existingUser = db.data!.userslist.find(user => user.username === username);
+//     if (existingUser) {
+//       res.status(409).json({
+//         success: false,
+//         message: '用户名已存在'
+//       });
+//       return;
+//     }
+
+//     // 检查邮箱是否已存在
+//     const existingEmail = db.data!.userslist.find(user => user.email === email);
+//     if (existingEmail) {
+//       res.status(409).json({
+//         success: false,
+//         message: '邮箱已存在'
+//       });
+//       return;
+//     }
+
+//     // 创建新用户
+//     const hashedPassword = await hashPassword(password);
+//     const newUser: User = {
+//       id: generateId('userManage'),
+//       username,
+//       email,
+//       password: hashedPassword,
+//       role,
+//       status,
+//       createdAt: new Date().toISOString(),
+//       // permissions: getPermissionsByRole(role),
+    
+//     };
+
+//     db.data!.userslist.push(newUser);
+//     await db.write();
+
+//     // 返回用户信息时移除密码
+//     const { password: _, ...userWithoutPassword } = newUser;
+
+//     res.status(201).json({
+//       success: true,
+//       message: '用户创建成功',
+//       data: userWithoutPassword as User
+//     });
+//   } catch (error) {
+//     console.error('创建用户错误:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: '服务器内部错误'
+//     });
+//   }
+// });
+router.post('/adduser', async (req: Request<{}, ApiResponse<User>, CreateUserRequest>, res: Response<ApiResponse<User>>) => {
   try {
     const { username, email, role, status = 'active', password = 'admin123' } = req.body;
 

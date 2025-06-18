@@ -7,7 +7,8 @@
       "password": "$2a$10$YoL3Er8gxQVyeApc.0QFCO8NtBS4wIwvPwEQeTubFtukWiP.XjPFG",
       "role": "manager",
       "status": "active",
-      "createdAt": "2025-06-17T06:43:11.653Z"
+      "createdAt": "2025-06-17T06:43:11.653Z",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJzTWVtYmVyLTAwMSIsInVzZXJuYW1lIjoibWFuYWdlciIsInJvbGUiOiJtYW5hZ2VyIiwiaWF0IjoxNzUwMjE1OTA0LCJleHAiOjE3NTAzMDIzMDR9.sb5H89PjKxE813-YgNKRxCgz2mnHRKf4MZ5xpxBn3aQ"
     },
     {
       "id": "usersMember-003",
@@ -27,6 +28,15 @@
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.600Z",
       "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTAyMTU1NTQsImV4cCI6MTc1MDMwMTk1NH0.VpzAD0CG1uHE8wo9OP16LVWHgMMWfixsbEPEib6yk-c"
+    },
+    {
+      "id": "userManage-1750215919250-5bzs9ftjc",
+      "username": "anqi",
+      "email": "anqi@example.com",
+      "password": "$2a$10$YRoATa8b.I3BYVXqUnfHi.HmlTB6YlluF6GeFPireBBHAUHk0o91a",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2025-06-18T03:05:19.250Z"
     }
   ],
   "roles": [

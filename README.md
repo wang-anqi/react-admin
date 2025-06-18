@@ -103,6 +103,7 @@ export interface UsersList {
 3. **/me用户个人信息 接口数据**
 - 需要permission，借助roles来获取
 - 前端页面的路由权限和页面权限都是通过redux数据控制的，也就是这个接口的返回数据，所有这个接口的返回数据的结构和redux数据获取要保持一致
+- 接口权限 和 角色权限保持一致
 ```js
    function getPermissionsByRole(roleName: string) {
       const roles = db.data.roles.flat?.() || [];
@@ -122,6 +123,35 @@ export interface UsersList {
 
       }
     });
+```
+#### 3-1 接口权限 和 角色权限保持一致
+- 接口通过 实现，例如：用户列表的编辑和删除 只有admin拥有，则通过 middleware/auth/requireAdmin  实现
+```js
+export function requireAdmin(req: Request, res: Response, next: NextFunction): void {
+  if (!req.user) {
+    res.status(401).json({
+      success: false,
+      message: '未认证用户'
+    });
+    return;
+  }
+
+  if (req.user.role !== 'admin') {
+    res.status(403).json({
+      success: false,
+      message: '权限不足，需要管理员权限'
+    });
+    return;
+  }
+
+  next();
+}
+```
+接口调用
+```js
+router.delete('/deleteuser/:id', requireAdmin, async (req: Request<{ id: string }>, res: Response<ApiResponse>) => {
+  ···
+})
 ```
 
 ## 其他说明
