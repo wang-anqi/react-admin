@@ -59,7 +59,7 @@ router.get('/userslist', async (req: Request, res: Response<ApiResponse<UsersLis
  */
 router.post('/adduser', requireAdmin, async (req: Request<{}, ApiResponse<User>, CreateUserRequest>, res: Response<ApiResponse<User>>) => {
   try {
-    const { username, email, role, status = 'active', password = '123456' } = req.body;
+    const { username, email, role, status = 'active', password = 'admin123' } = req.body;
 
     // 验证必填字段
     // 这边暂时只保证传过来的三个参数

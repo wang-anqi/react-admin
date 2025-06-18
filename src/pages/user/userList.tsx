@@ -12,7 +12,8 @@ interface User {
   id: number;
   username: string;
   email?: string;
-  role: 'admin' | 'manager' | 'user';
+  // role: 'admin' | 'manager' | 'user';
+  role:string;
 }
 // const mockUsers = [
 //   { id: 1, username: 'admin', role: 'admin', email: 'admin@example.com' },

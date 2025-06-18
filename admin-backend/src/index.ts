@@ -7,6 +7,7 @@ import { mkdir } from 'fs/promises';
 // 导入路由
 import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
+import rolesRoutes from './routes/roles'
 
 // 导入数据库初始化
 import { initDatabase } from './database/db';
@@ -44,6 +45,7 @@ app.get('/health', (req, res) => {
 // API 路由
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
+app.use('/api/roles',rolesRoutes)
 
 // 404 处理
 app.use('*', (req, res) => {

@@ -3,7 +3,7 @@ import { JSONFile } from 'lowdb/node';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import bcrypt from 'bcryptjs';
-import type { Database, User,  Role } from '../types/index.js';
+import type { Database, User, Role } from '../types/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -34,12 +34,14 @@ export async function initDatabase(): Promise<void> {
 
   // 创建默认管理员账户（如果不存在）
   if (db.data.roles.length === 0) {
-    
+
     const defaultRole: Role = [
       {
         "id": 1,
         "name": "admin",
-        "description": "系统管理员，拥有全部权限",
+        "description": "系统管理员",
+        "permissionDes": "拥有全部权限",
+
         "permissions": [
           "user:add",
           "user:edit",
@@ -53,7 +55,8 @@ export async function initDatabase(): Promise<void> {
       {
         "id": 2,
         "name": "managerBoss",
-        "description": "业务高级管理员，拥有部分用户列表管理权限",
+        "description": "业务高级管理员",
+        "permissionDes": "拥有部分用户列表管理权限",
         "permissions": [
           "user:add",
           "user:edit",
@@ -63,7 +66,8 @@ export async function initDatabase(): Promise<void> {
       {
         "id": 3,
         "name": "manager",
-        "description": "业务管理员，具有部分用户列表管理权限",
+        "description": "业务管理员",
+        "permissionDes": "具有部分用户列表管理权限",
         "permissions": [
           "user:add"
         ]
@@ -71,7 +75,8 @@ export async function initDatabase(): Promise<void> {
       {
         "id": 3,
         "name": "user",
-        "description": "普通用户，仅具查看权限",
+        "description": "普通用户",
+        "permissionDes": "仅具查看权限",
         "permissions": []
       }
     ]
@@ -91,7 +96,7 @@ export async function initDatabase(): Promise<void> {
         "role": "manager",
         "status": "active",
         "createdAt": "2025-06-17T06:43:11.653Z",
-       
+
       },
       {
         "id": "usersMember-003",
@@ -107,7 +112,7 @@ export async function initDatabase(): Promise<void> {
         "username": "admin",
         "role": "admin",
         "email": "wangzhangsan@example.com",
-        "password":hashedPassword,
+        "password": hashedPassword,
         "status": "active",
         "createdAt": "2025-06-17T06:43:11.600Z"
       }
@@ -116,7 +121,7 @@ export async function initDatabase(): Promise<void> {
     db.data.userslist.push(...testUsers);
   }
 
-  
+
 
   // 写入数据库
   await db.write();

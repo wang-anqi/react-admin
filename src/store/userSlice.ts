@@ -1,69 +1,3 @@
-// import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import axiosInstance from '../services/auth';
-
-// interface UserInfo {
-//   id?: string;
-//   username: string;
-//   email?: string;
-//   role: string;
-// }
-
-// export interface UserState {
-//   userInfo: UserInfo | null;
-//   loading: boolean;
-//   error: string | null;
-// }
-
-
-// // 初始状态
-// const initialState: UserState = {
-//   userInfo: null,
-//   loading: false,
-//   error: null,
-// };
-
-// // 异步获取用户信息
-// export const fetchUserInfo = createAsyncThunk(
-//   'user/fetchUserInfo',
-//   async (_, thunkAPI) => {
-//     try {
-//       const res = await axiosInstance.get('/auth/me'); // 确保你的 mock-server 实现了该接口
-//       return res.data;
-//     } catch (error: any) {
-//       return thunkAPI.rejectWithValue(error.message);
-//     }
-//   }
-// );
-
-// const userSlice = createSlice({
-//   name: 'user',
-//   initialState,
-//   reducers: {
-//     clearUser(state) {
-//       state.userInfo = null;
-//       state.error = null;
-//     },
-//   },
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(fetchUserInfo.pending, (state) => {
-//         state.loading = true;
-//         state.error = null;
-//       })
-//       .addCase(fetchUserInfo.fulfilled, (state, action) => {
-//         state.loading = false;
-//         state.userInfo = action.payload;
-//       })
-//       .addCase(fetchUserInfo.rejected, (state, action) => {
-//         state.loading = false;
-//         state.error = action.payload as string;
-//       });
-//   },
-// });
-
-// export const { clearUser } = userSlice.actions;
-// export default userSlice.reducer;
-
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../services/auth';
 
@@ -72,21 +6,12 @@ export interface UserInfo {
   id: number;
   token:string;
   username: string;
-  role: 'admin' | 'manager' | 'user';
+  // role: 'admin' | 'manager' | 'user';
+  role:string;
   permissions: string[];
 }
 
-// export interface UserInfo{
-//   token:string;
-//   userInfo:{
-//     data:{
-//       id:string;
-//       role: 'admin' | 'manager' | 'user';
-//       permissions: string[];
-//     }
-//   }
-  
-// }
+
 
 // 异步获取用户信息
 export const fetchUserInfo = createAsyncThunk<UserInfo>(

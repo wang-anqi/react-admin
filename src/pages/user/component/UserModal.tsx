@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useDeferredValue, useEffect } from 'react';
 import { Modal, Form, Input, Select } from 'antd';
-
+import { fetchRoles, selectRoles, selectRoleLoading } from '@/store/rolesSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import type { AppDispatch } from '../../../store';
 export interface UserFormValues {
   username: string;
   email?: string;
-  role: 'admin' | 'manager' | 'user';
+  // role: 'admin' | 'manager' | 'user';
+  role: string;
 }
 
 interface UserModalProps {
@@ -22,8 +25,21 @@ const UserModal: React.FC<UserModalProps> = ({
 }) => {
   const [form] = Form.useForm();
   console.log('initialValues',initialValues);
+  const dispatch = useDispatch<AppDispatch>();
+  const roles = useSelector(selectRoles);
+  const loading = useSelector(selectRoleLoading);
   
+  useEffect(()=>{
+    dispatch(fetchRoles());
+    
+    
+  },[dispatch])
 
+  useEffect(()=>{
+   
+    console.log('roles',roles);
+    
+  },[roles])
   // 初始化或重置表单
   useEffect(() => {
     if (open) {
@@ -70,10 +86,15 @@ const UserModal: React.FC<UserModalProps> = ({
           name="role"
           rules={[{ required: true, message: '请选择角色' }]}
         >
-          <Select placeholder="请选择角色">
-            <Select.Option value="admin">管理员</Select.Option>
-            <Select.Option value="manager">经理</Select.Option>
-            <Select.Option value="user">普通用户</Select.Option>
+          <Select placeholder="请选择角色" 
+          loading={loading}
+          disabled={loading}
+          >
+            {roles?.map((role) => (
+              <Select.Option key={role.id} value={role.name}>
+                {role.description}
+              </Select.Option>
+            ))}
           </Select>
         </Form.Item>
       </Form>

@@ -27,6 +27,7 @@ export interface Role {
   id: number;
   name: string; // e.g. 'admin', 'managerBoss'
   description: string;
+  permissionDes:string;
   permissions: string[];
 }
 
@@ -46,17 +47,17 @@ export interface UsersList {
 
 
 // 管理员接口定义
-export interface Admin {
-  id: string;
+// export interface Admin {
+//   id: string;
 
-  username: string;
-  permissions: string[];
-  role: 'admin';
-  email:string;
-  password: string;
-  createdAt: string;
-  token?: string;
-}
+//   username: string;
+//   permissions: string[];
+//   role: 'admin';
+//   email:string;
+//   password: string;
+//   createdAt: string;
+//   token?: string;
+// }
 
 
 // 登录请求体
@@ -70,7 +71,7 @@ export interface LoginResponse {
   success: boolean;
   message: string;
   token?: string;
-  user?: Omit<User | Admin, 'password'>;
+  user?: Omit<User, 'password'>;
 }
 
 // 用户创建请求体
@@ -78,7 +79,8 @@ export interface CreateUserRequest {
   username: string;
   email: string;
   password: string;
-  role?: 'admin' | 'manager' | 'user';
+  // role?: 'admin' | 'manager' | 'user';
+  role:string;
   status?: 'active' | 'inactive';
 }
 
@@ -86,7 +88,8 @@ export interface CreateUserRequest {
 export interface UpdateUserRequest {
   username?: string;
   email?: string;
-  role?: 'admin' | 'manager' | 'user';
+  // role?: 'admin' | 'manager' | 'user';
+  role:string;
   status?: 'active' | 'inactive';
 }
 
