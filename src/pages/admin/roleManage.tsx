@@ -20,13 +20,13 @@ import {
 import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../store';
-import { 
-  fetchRoles, 
+import {
+  fetchRoles,
   createRole,
   updateRole,
   deleteRole,
-  selectRoles, 
-  selectRoleLoading, 
+  selectRoles,
+  selectRoleLoading,
   selectRoleError,
   selectLastUpdated,
   clearError
@@ -66,7 +66,7 @@ const AVAILABLE_PERMISSIONS = [
 
 const RoleManage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  
+
   // 从 Redux 获取角色数据
   const roles = useSelector(selectRoles);
   const loading = useSelector(selectRoleLoading);
@@ -140,14 +140,14 @@ const RoleManage: React.FC = () => {
   const handleDelete = async (record: Role) => {
     try {
       console.log('准备删除角色:', record.name, 'ID:', record.id);
-      
+
       // 使用 Redux action 删除角色，自动处理前后端同步
       const result = await dispatch(deleteRole(record.id));
-      
+
       if (deleteRole.fulfilled.match(result)) {
         message.success(`角色 "${record.name}" 删除成功`);
         console.log('角色删除成功，Redux 状态已同步');
-        
+
         // 删除成功后刷新列表
         dispatch(fetchRoles());
       } else {
@@ -163,24 +163,24 @@ const RoleManage: React.FC = () => {
   // 提交表单 - 使用 Redux actions
   const handleSubmit = async (values: RoleFormValues) => {
     setSubmitting(true);
-    
+
     try {
       console.log('提交角色数据:', values);
-      
+
       let result;
-      
+
       if (editingRole) {
         // 编辑角色 - 使用 Redux updateRole action
         console.log('更新角色:', editingRole.id, values);
-        result = await dispatch(updateRole({ 
-          id: editingRole.id, 
-          ...values 
+        result = await dispatch(updateRole({
+          id: editingRole.id,
+          ...values
         }));
-        
+
         if (updateRole.fulfilled.match(result)) {
           message.success(`角色 "${values.name}" 更新成功`);
           console.log('角色更新成功，Redux 状态已同步');
-          
+
           // 更新成功后刷新列表
           dispatch(fetchRoles());
         }
@@ -188,22 +188,22 @@ const RoleManage: React.FC = () => {
         // 新增角色 - 使用 Redux createRole action
         console.log('创建新角色:', values);
         result = await dispatch(createRole(values));
-        
+
         if (createRole.fulfilled.match(result)) {
           message.success(`角色 "${values.name}" 创建成功`);
           console.log('角色创建成功，Redux 状态已同步');
-          
+
           // 新增成功后刷新列表
           dispatch(fetchRoles());
         }
       }
-      
+
       // 如果操作成功，关闭弹窗
       if (result.meta.requestStatus === 'fulfilled') {
         setModalOpen(false);
         form.resetFields();
       }
-      
+
     } catch (error) {
       console.error('提交角色数据异常:', error);
       message.error('操作失败，请重试');
@@ -308,10 +308,10 @@ const RoleManage: React.FC = () => {
             cancelText="取消"
             okButtonProps={{ danger: true }}
           >
-            <Button 
-              type="link" 
-              icon={<DeleteOutlined />} 
-              danger 
+            <Button
+              type="link"
+              icon={<DeleteOutlined />}
+              danger
               size="small"
               disabled={record.name === 'admin'} // 禁止删除admin角色
             >
@@ -322,6 +322,8 @@ const RoleManage: React.FC = () => {
       ),
     },
   ];
+
+
 
   return (
     <div style={{ padding: 24 }}>
@@ -356,13 +358,13 @@ const RoleManage: React.FC = () => {
             )}
           </Space>
         </div>
-        
+
         <Table
           rowKey="id"
           columns={columns}
           dataSource={roles}
           loading={loading}
-          pagination={{ 
+          pagination={{
             pageSize: 10,
             showSizeChanger: true,
             showQuickJumper: true,
@@ -406,9 +408,9 @@ const RoleManage: React.FC = () => {
           >
             <Input placeholder="请输入角色名称，如：manager、user等" />
           </Form.Item>
-          
-          <Form.Item 
-            label="角色描述" 
+
+          <Form.Item
+            label="角色描述"
             name="description"
             rules={[{ max: 100, message: '描述不能超过100个字符' }]}
           >
@@ -419,9 +421,9 @@ const RoleManage: React.FC = () => {
               maxLength={100}
             />
           </Form.Item>
-          
+
           <Form.Item label="权限配置" name="permissions">
-            <div style={{ border: '1px solid #d9d9d9', borderRadius: '6px', padding: '12px' }}>
+          
               <Checkbox.Group style={{ width: '100%' }}>
                 <Row gutter={[16, 12]}>
                   {AVAILABLE_PERMISSIONS.map(permission => (
@@ -433,7 +435,8 @@ const RoleManage: React.FC = () => {
                   ))}
                 </Row>
               </Checkbox.Group>
-            </div>
+          
+
           </Form.Item>
         </Form>
       </Modal>
@@ -462,7 +465,7 @@ const RoleManage: React.FC = () => {
                 <p><strong>权限描述：</strong>{viewingRole.permissionDes || '暂无权限描述'}</p>
               </div>
             </Card>
-            
+
             <Card size="small">
               <Title level={5} style={{ margin: 0, marginBottom: 12 }}>
                 权限列表 ({viewingRole.permissions?.length || 0} 个权限)
@@ -480,9 +483,9 @@ const RoleManage: React.FC = () => {
                   ))}
                 </Space>
               ) : (
-                <div style={{ 
-                  textAlign: 'center', 
-                  color: '#999', 
+                <div style={{
+                  textAlign: 'center',
+                  color: '#999',
                   padding: '20px',
                   background: '#fafafa',
                   borderRadius: '6px'

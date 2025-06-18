@@ -16,6 +16,8 @@ router.get('/', (req: Request, res: Response) => {
 //  新增角色
 router.post('/', (req: Request, res: Response) => {
     const { name, description, permissions } = req.body;
+    console.log('roles接口新增角色',permissions);
+    
   
     if (!name) {
       return res.status(400).json({ code: 400, message: '角色名称不能为空' });

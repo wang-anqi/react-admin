@@ -73,7 +73,7 @@ export async function initDatabase(): Promise<void> {
         ]
       },
       {
-        "id": 3,
+        "id": 4,
         "name": "user",
         "description": "普通用户",
         "permissionDes": "仅具查看权限",
@@ -81,7 +81,8 @@ export async function initDatabase(): Promise<void> {
       }
     ]
 
-    db.data.roles.push(defaultRole);
+    // db.data.roles.push(defaultRole);
+    db.data.roles.push(...defaultRole);
   }
 
   // 创建一些测试用户数据（如果不存在）
