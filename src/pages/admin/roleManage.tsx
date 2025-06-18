@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   Card,
@@ -146,6 +147,9 @@ const RoleManage: React.FC = () => {
       if (deleteRole.fulfilled.match(result)) {
         message.success(`角色 "${record.name}" 删除成功`);
         console.log('角色删除成功，Redux 状态已同步');
+        
+        // 删除成功后刷新列表
+        dispatch(fetchRoles());
       } else {
         // 如果删除失败，error 会通过 useEffect 显示
         console.log('角色删除失败');
@@ -176,6 +180,9 @@ const RoleManage: React.FC = () => {
         if (updateRole.fulfilled.match(result)) {
           message.success(`角色 "${values.name}" 更新成功`);
           console.log('角色更新成功，Redux 状态已同步');
+          
+          // 更新成功后刷新列表
+          dispatch(fetchRoles());
         }
       } else {
         // 新增角色 - 使用 Redux createRole action
@@ -185,6 +192,9 @@ const RoleManage: React.FC = () => {
         if (createRole.fulfilled.match(result)) {
           message.success(`角色 "${values.name}" 创建成功`);
           console.log('角色创建成功，Redux 状态已同步');
+          
+          // 新增成功后刷新列表
+          dispatch(fetchRoles());
         }
       }
       
@@ -378,6 +388,7 @@ const RoleManage: React.FC = () => {
         destroyOnClose
         okText={editingRole ? '更新' : '创建'}
         cancelText="取消"
+        confirmLoading={submitting} // 添加提交加载状态
       >
         <Form
           form={form}
