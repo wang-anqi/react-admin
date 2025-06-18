@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Table, Button, Space, Typography, message } from 'antd';
+import { Card, Table, Button, Space, Typography, message , Popconfirm} from 'antd';
 import { useSelector } from 'react-redux';
 import axiosInstance from '../../services/auth';
 import type { RootState } from '../../store';
@@ -63,11 +63,11 @@ const UserList: React.FC = () => {
         // 编辑用户：调用 /users/update/:id 接口
         // await axiosInstance.put(`/users/update/${editingUser.id}`, values);
         console.log('编辑');
-        
+        await axiosInstance.put(`/users/edituser/${editingUser.id}`, values);
         message.success('用户更新成功');
       } else {
         // 新增用户：调用 /users/create 接口
-        // await axiosInstance.post('/users/create', values);
+        await axiosInstance.post('/users/adduser', values);
         console.log('新增');
         message.success('用户新增成功');
       }
@@ -76,15 +76,21 @@ const UserList: React.FC = () => {
       setModalOpen(false);   // 关闭弹窗
     } catch (error) {
       message.error(editingUser ? '更新失败' : '新增失败');
+      
     }
   };
   
 
-  const deleteUser = async () => {
-    // '调用delete'
-    console.log('删除用户');
-
-  }
+  const handleDelete = async (record: User) => {
+    try {
+      await axiosInstance.delete(`/users/deleteuser/${record.id}`);
+      message.success('用户删除成功');
+      fetchUsers(); // 刷新用户列表
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.message || '删除失败';
+      message.error(errorMessage);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -119,7 +125,15 @@ const UserList: React.FC = () => {
             code="user:delete"
             noMatch={<span style={{ color: '#ccc' }}>无删除权限</span>}
           >
-            <Button type="link" danger>删除</Button>
+            <Popconfirm
+              title="确认删除"
+              description={`确定要删除用户 ${record.username} 吗？`}
+              onConfirm={() => handleDelete(record)}
+              okText="确认"
+              cancelText="取消"
+            >
+              <Button type="link" danger>删除</Button>
+            </Popconfirm>
           </HasPermission>
         </Space>
       )
