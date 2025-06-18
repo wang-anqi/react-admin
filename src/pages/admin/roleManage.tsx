@@ -16,11 +16,20 @@ import {
   Row,
   Col,
 } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ReloadOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../store';
-import { fetchRoles, selectRoles, selectRoleLoading, selectRoleError } from '../../store/rolesSlice';
-import axiosInstance from '../../services/auth';
+import { 
+  fetchRoles, 
+  createRole,
+  updateRole,
+  deleteRole,
+  selectRoles, 
+  selectRoleLoading, 
+  selectRoleError,
+  selectLastUpdated,
+  clearError
+} from '../../store/rolesSlice';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -61,24 +70,46 @@ const RoleManage: React.FC = () => {
   const roles = useSelector(selectRoles);
   const loading = useSelector(selectRoleLoading);
   const error = useSelector(selectRoleError);
+  const lastUpdated = useSelector(selectLastUpdated);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | undefined>();
   const [viewingRole, setViewingRole] = useState<Role | undefined>();
+  const [submitting, setSubmitting] = useState(false); // 添加提交状态
   const [form] = Form.useForm();
 
   // 初始化加载角色数据
   useEffect(() => {
+    console.log('组件挂载，开始获取角色数据...');
     dispatch(fetchRoles());
   }, [dispatch]);
 
   // 错误处理
   useEffect(() => {
     if (error) {
-      message.error(error);
+      message.error(`角色操作失败: ${error}`);
+      console.error('角色操作错误:', error);
+      // 3秒后自动清除错误状态
+      setTimeout(() => {
+        dispatch(clearError());
+      }, 3000);
     }
-  }, [error]);
+  }, [error, dispatch]);
+
+  // 监听角色数据变化，用于调试和确认同步状态
+  useEffect(() => {
+    if (roles && roles.length > 0) {
+      console.log('角色数据已更新，当前角色数量:', roles.length);
+      console.log('最后更新时间:', lastUpdated ? new Date(lastUpdated).toLocaleString() : '未知');
+    }
+  }, [roles, lastUpdated]);
+
+  // 手动刷新角色数据
+  const handleRefresh = () => {
+    console.log('手动刷新角色数据...');
+    dispatch(fetchRoles());
+  };
 
   // 新增角色
   const handleAdd = () => {
@@ -104,43 +135,70 @@ const RoleManage: React.FC = () => {
     setDrawerOpen(true);
   };
 
-  // 删除角色
+  // 删除角色 - 使用 Redux action
   const handleDelete = async (record: Role) => {
     try {
-      const res = await axiosInstance.delete(`/roles/${record.id}`);
-      if (res.data.code === 200) {
-        message.success('角色删除成功');
-        // 重新获取角色列表
-        dispatch(fetchRoles());
+      console.log('准备删除角色:', record.name, 'ID:', record.id);
+      
+      // 使用 Redux action 删除角色，自动处理前后端同步
+      const result = await dispatch(deleteRole(record.id));
+      
+      if (deleteRole.fulfilled.match(result)) {
+        message.success(`角色 "${record.name}" 删除成功`);
+        console.log('角色删除成功，Redux 状态已同步');
+      } else {
+        // 如果删除失败，error 会通过 useEffect 显示
+        console.log('角色删除失败');
       }
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || '删除失败';
-      message.error(errorMessage);
+    } catch (error) {
+      console.error('删除角色异常:', error);
+      message.error('删除角色时发生异常');
     }
   };
 
-  // 提交表单
+  // 提交表单 - 使用 Redux actions
   const handleSubmit = async (values: RoleFormValues) => {
+    setSubmitting(true);
+    
     try {
+      console.log('提交角色数据:', values);
+      
+      let result;
+      
       if (editingRole) {
-        // 编辑角色
-        const res = await axiosInstance.put(`/roles/${editingRole.id}`, values);
-        if (res.data.code === 200) {
-          message.success('角色更新成功');
+        // 编辑角色 - 使用 Redux updateRole action
+        console.log('更新角色:', editingRole.id, values);
+        result = await dispatch(updateRole({ 
+          id: editingRole.id, 
+          ...values 
+        }));
+        
+        if (updateRole.fulfilled.match(result)) {
+          message.success(`角色 "${values.name}" 更新成功`);
+          console.log('角色更新成功，Redux 状态已同步');
         }
       } else {
-        // 新增角色
-        const res = await axiosInstance.post('/roles', values);
-        if (res.data.code === 200) {
-          message.success('角色创建成功');
+        // 新增角色 - 使用 Redux createRole action
+        console.log('创建新角色:', values);
+        result = await dispatch(createRole(values));
+        
+        if (createRole.fulfilled.match(result)) {
+          message.success(`角色 "${values.name}" 创建成功`);
+          console.log('角色创建成功，Redux 状态已同步');
         }
       }
-      setModalOpen(false);
-      // 重新获取角色列表
-      dispatch(fetchRoles());
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || (editingRole ? '更新失败' : '创建失败');
-      message.error(errorMessage);
+      
+      // 如果操作成功，关闭弹窗
+      if (result.meta.requestStatus === 'fulfilled') {
+        setModalOpen(false);
+        form.resetFields();
+      }
+      
+    } catch (error) {
+      console.error('提交角色数据异常:', error);
+      message.error('操作失败，请重试');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -260,16 +318,33 @@ const RoleManage: React.FC = () => {
       <Title level={3}>角色管理</Title>
       <Card>
         <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAdd}
-          >
-            新增角色
-          </Button>
-          <div style={{ color: '#666', fontSize: '14px' }}>
-            共 {roles?.length || 0} 个角色
-          </div>
+          <Space>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+            >
+              新增角色
+            </Button>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={handleRefresh}
+              loading={loading}
+              title="刷新角色数据"
+            >
+              刷新
+            </Button>
+          </Space>
+          <Space>
+            <div style={{ color: '#666', fontSize: '14px' }}>
+              共 {roles?.length || 0} 个角色
+            </div>
+            {lastUpdated && (
+              <div style={{ color: '#999', fontSize: '12px' }}>
+                最后更新: {new Date(lastUpdated).toLocaleTimeString()}
+              </div>
+            )}
+          </Space>
         </div>
         
         <Table
