@@ -41,12 +41,12 @@ const menuConfig = [
         icon: <SettingOutlined />,
         roles: ['admin'],
     },
-    {
-        key: '/permissions',
-        label: '权限管理',
-        icon: <SettingOutlined />,
-        roles: ['admin'],
-    },
+    // {
+    //     key: '/permissions',
+    //     label: '权限管理',
+    //     icon: <SettingOutlined />,
+    //     roles: ['admin'],
+    // },
 ];
 
 const AppLayout: React.FC = () => {

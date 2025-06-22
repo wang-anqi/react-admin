@@ -10,7 +10,7 @@ import Forbidden from './pages/403';
 import AuthGuard from './components/AuthGuard';
 import UserList from './pages/user/userList';
 import RoleManage from './pages/admin/roleManage';
-import PermissionManage from './pages/admin/permissionsManage';
+// import PermissionManage from './pages/admin/permissionsManage';
 import Dashboard from './pages/dashboard';
 import AppLayout from './pages/Layout/index'
 import Chart from './pages/chart';
@@ -43,11 +43,11 @@ const App: React.FC = () => {
                   <RoleManage />
                 </AuthGuard>
               } />
-              <Route path="permissions" element={
+              {/* <Route path="permissions" element={
                 <AuthGuard requiredRoles={['admin']}>
                   <PermissionManage />
                 </AuthGuard>
-              } />
+              } /> */}
             </Route>
 
 

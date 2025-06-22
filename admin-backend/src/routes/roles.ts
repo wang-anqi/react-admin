@@ -5,6 +5,24 @@ import { db, generateId } from '../database/db.js';
 
 import { Role } from '../types/index.js';
 
+type RoleTreeItem = {
+  title: string;
+  key: string;
+  children?: RoleTreeItem[];
+};
+
+// const result: RoleTreeItem[] = [
+//   {
+//     title: '管理员',
+//     key: 'adminGroup',
+//     children: []
+//   },
+//   {
+//     title: '用户组',
+//     key: 'userGroup',
+//     children: []
+//   }
+// ];
 
 const router = Router();
 // 获取所有角色
@@ -79,6 +97,41 @@ router.post('/', (req: Request, res: Response) => {
     db.write();
   
     res.json({ code: 200, message: '角色已删除' });
+  });
+
+
+  router.get('/rolesTree', async (req: Request, res: Response) => {
+    await db.read();
+    const roles = db.data?.roles || [];
+  
+    const result: RoleTreeItem[] = [
+      {
+        title: '管理员',
+        key: 'adminGroup',
+        children: []
+      },
+      {
+        title: '用户组',
+        key: 'userGroup',
+        children: []
+      }
+    ];
+
+        
+  
+    for (const role of roles) {
+      const item = { title: role.description, key: role.name };
+      if (['admin', 'manager', 'managerBoss'].includes(role.name)) {
+        result[0].children?.push(item);
+      } else if (role.name === 'user') {
+        result[1].children?.push(item);
+      }
+    }
+  
+    res.json({
+      code: 200,
+      data: result
+    });
   });
   
   export default router;
