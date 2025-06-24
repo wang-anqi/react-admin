@@ -1,22 +1,52 @@
 // src/pages/Charts/index.tsx
-import React, { useState, useMemo, lazy, Suspense } from 'react';
+import React, { useState, useMemo, lazy, Suspense, useCallback, useRef, useEffect } from 'react';
 import {
   Card, Tabs, Row, Col, DatePicker, Select,
-  Button, Space, message, Typography, Divider, Spin
+  Button, Space, message, Typography, Divider, Spin,
+  Input, Avatar, Tag, Badge, List, Pagination, Empty, Tooltip
 } from 'antd';
+import { 
+  SearchOutlined, 
+  UserOutlined, 
+  ClockCircleOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+  ReloadOutlined,
+  FilterOutlined
+} from '@ant-design/icons';
+
 const { TabPane } = Tabs;
 const { RangePicker } = DatePicker;
-const { Text } = Typography;
+const { Text, Title } = Typography;
+const { Search } = Input;
 
 // 懒加载图表组件
 const LineChart = lazy(() => import('../../components/LineChart'));
 const PieChart = lazy(() => import('../../components/PieChart'));
-// const RadarChart = lazy(() => import('../../components/RadarChart'));
 const BarChart = lazy(() => import('../../components/BarChart'));
+
+// 用户状态枚举
+enum UserStatus {
+  ONLINE = 'online',
+  OFFLINE = 'offline',
+  AWAY = 'away'
+}
+
+// 用户类型
+interface User {
+  id: number;
+  name: string;
+  avatar?: string;
+  lastVisit: string;
+  status: UserStatus;
+  visitCount: number;
+  location: string;
+  device: string;
+  duration: number; // 在线时长（分钟）
+}
 
 // Mock数据 - 修正为正确的格式
 const mockChartData = {
-  // LineChart期望格式: { name: string, data: { date: string, value: number }[] }[]
   lineData: [
     {
       name: '访问量',
@@ -43,8 +73,6 @@ const mockChartData = {
       ]
     }
   ],
-  
-  // PieChart期望格式: { name: string, value: number, color?: string }[] - 格式已正确
   pieData: [
     { name: '华东地区', value: 35, color: '#1890ff' },
     { name: '华南地区', value: 28, color: '#52c41a' },
@@ -52,24 +80,48 @@ const mockChartData = {
     { name: '西南地区', value: 10, color: '#f5222d' },
     { name: '其他地区', value: 5, color: '#722ed1' },
   ],
-  
-  // BarChart期望格式: { xAxisData: string[], seriesData: number[] }
   barData: {
     xAxisData: ['移动端', 'PC端', '平板端', '小程序', 'APP'],
     seriesData: [320, 150, 25, 80, 200]
   }
 };
 
+// 生成Mock用户数据
+const generateMockUsers = (count: number): User[] => {
+  const locations = ['北京', '上海', '深圳', '杭州', '广州', '成都', '武汉', '西安'];
+  const devices = ['iPhone', 'Android', 'Windows', 'Mac', 'iPad'];
+  const statuses = [UserStatus.ONLINE, UserStatus.OFFLINE, UserStatus.AWAY];
+  
+  return Array.from({ length: count }, (_, i) => {
+    const lastVisitDays = Math.floor(Math.random() * 30);
+    const lastVisitHours = Math.floor(Math.random() * 24);
+    const lastVisitMinutes = Math.floor(Math.random() * 60);
+    
+    const lastVisitDate = new Date();
+    lastVisitDate.setDate(lastVisitDate.getDate() - lastVisitDays);
+    lastVisitDate.setHours(lastVisitHours, lastVisitMinutes);
+    
+    return {
+      id: i + 1,
+      name: `用户${String(i + 1).padStart(4, '0')}`,
+      avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`,
+      lastVisit: lastVisitDate.toLocaleString('zh-CN'),
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      visitCount: Math.floor(Math.random() * 1000) + 1,
+      location: locations[Math.floor(Math.random() * locations.length)],
+      device: devices[Math.floor(Math.random() * devices.length)],
+      duration: Math.floor(Math.random() * 480) + 10 // 10-490分钟
+    };
+  });
+};
+
 // 根据不同筛选条件生成不同的数据
 const getMockDataByFilters = (region: string, userType: string, dateRange: any) => {
-  // 基础数据
   let data = { ...mockChartData };
   
-  // 根据地区筛选调整数据
   if (region !== 'all') {
     const regionMultiplier = region === 'east' ? 1.2 : region === 'south' ? 0.8 : 1;
     
-    // 调整折线图数据
     data.lineData = data.lineData.map(series => ({
       ...series,
       data: series.data.map(item => ({
@@ -78,19 +130,15 @@ const getMockDataByFilters = (region: string, userType: string, dateRange: any) 
       }))
     }));
     
-    // 调整柱状图数据
     data.barData = {
       ...data.barData,
       seriesData: data.barData.seriesData.map(value => Math.round(value * regionMultiplier))
     };
   }
   
-  // 根据用户类型筛选
   if (userType === 'new') {
-    // 只显示新用户数据
     data.lineData = data.lineData.filter(series => series.name === '新用户');
   } else if (userType === 'return') {
-    // 模拟回访用户数据
     data.lineData = [
       {
         name: '回访用户',
@@ -107,13 +155,28 @@ const getMockDataByFilters = (region: string, userType: string, dateRange: any) 
     ];
   }
   
-  // 根据日期范围调整（这里简单模拟）
   if (dateRange && dateRange.length === 2) {
-    // 实际项目中这里会根据日期范围过滤数据
     console.log('日期范围筛选:', dateRange);
   }
   
   return data;
+};
+
+// 用户状态配置
+const statusConfig = {
+  [UserStatus.ONLINE]: { color: '#52c41a', text: '在线' },
+  [UserStatus.OFFLINE]: { color: '#d9d9d9', text: '离线' },
+  [UserStatus.AWAY]: { color: '#faad14', text: '离开' }
+};
+
+// 格式化在线时长
+const formatDuration = (minutes: number): string => {
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  if (hours > 0) {
+    return `${hours}小时${mins}分钟`;
+  }
+  return `${mins}分钟`;
 };
 
 const Charts: React.FC = () => {
@@ -123,15 +186,71 @@ const Charts: React.FC = () => {
   const [dateRange, setDateRange] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
+  // 用户列表相关状态
+  const [users] = useState<User[]>(() => generateMockUsers(1000));
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<UserStatus | 'all'>('all');
+  const [sortField, setSortField] = useState<'lastVisit' | 'visitCount' | 'duration'>('lastVisit');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(20);
+  const [userListLoading, setUserListLoading] = useState(false);
+  
   // 根据筛选条件获取数据
   const chartData = useMemo(() => {
     return getMockDataByFilters(region, userType, dateRange);
   }, [region, userType, dateRange]);
   
+  // 过滤和排序用户列表
+  const filteredAndSortedUsers = useMemo(() => {
+    let filtered = users.filter(user => {
+      const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          user.location.includes(searchTerm);
+      const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    });
+    
+    // 排序
+    filtered.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sortField) {
+        case 'lastVisit':
+          aValue = new Date(a.lastVisit).getTime();
+          bValue = new Date(b.lastVisit).getTime();
+          break;
+        case 'visitCount':
+          aValue = a.visitCount;
+          bValue = b.visitCount;
+          break;
+        case 'duration':
+          aValue = a.duration;
+          bValue = b.duration;
+          break;
+        default:
+          return 0;
+      }
+      
+      if (sortOrder === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+    
+    return filtered;
+  }, [users, searchTerm, statusFilter, sortField, sortOrder]);
+  
+  // 分页数据
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return filteredAndSortedUsers.slice(startIndex, endIndex);
+  }, [filteredAndSortedUsers, currentPage, pageSize]);
+  
   // 处理筛选条件变化
   const handleFilterChange = () => {
     setLoading(true);
-    // 模拟异步请求
     setTimeout(() => {
       setLoading(false);
       message.success('筛选条件已应用');
@@ -148,14 +267,24 @@ const Charts: React.FC = () => {
     message.success('数据已导出为Excel');
   };
   
-  // 最近访问用户数据（虚拟滚动）
-  const recentUsers = useMemo(() => (
-    Array.from({ length: 1000 }, (_, i) => ({
-      id: i + 1,
-      name: `用户 ${i + 1}`,
-      lastVisit: `2025-06-${Math.floor(Math.random() * 28 + 1).toString().padStart(2, '0')} 12:${Math.floor(Math.random() * 60).toString().padStart(2, '0')}`
-    }))
-  ), []);
+  // 刷新用户列表
+  const handleRefreshUsers = () => {
+    setUserListLoading(true);
+    setTimeout(() => {
+      setUserListLoading(false);
+      message.success('用户列表已刷新');
+    }, 800);
+  };
+  
+  // 处理排序
+  const handleSort = (field: 'lastVisit' | 'visitCount' | 'duration') => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortOrder('desc');
+    }
+  };
 
   return (
     <Card title="图表分析中心" style={{ margin: 24 }} loading={loading}>
@@ -254,19 +383,6 @@ const Charts: React.FC = () => {
           </Suspense>
         </TabPane>
         
-        {/* <TabPane tab="多维评估" key="radar">
-          <Suspense fallback={
-            <div style={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <Spin tip="加载图表..." size="large" />
-            </div>
-          }>
-            <RadarChart 
-              data={chartData?.radarData || []} 
-              loading={loading}
-            />
-          </Suspense>
-        </TabPane> */}
-        
         <TabPane tab="对比分析" key="bar">
           <Suspense fallback={
             <div style={{ height: 400, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -281,45 +397,198 @@ const Charts: React.FC = () => {
         </TabPane>
       </Tabs>
 
-      {/* 最近访问用户列表 */}
-      <Divider orientation="left">最近访问用户</Divider>
-      <div style={{ 
-        height: 300, 
-        overflow: 'auto',
-        border: '1px solid #f0f0f0',
-        borderRadius: 6,
-        backgroundColor: '#fafafa'
-      }}>
-        {recentUsers.slice(0, 50).map(user => (
-          <div 
-            key={user.id} 
-            style={{ 
-              padding: '8px 16px', 
-              borderBottom: '1px solid #f0f0f0',
-              backgroundColor: '#fff',
-              margin: '4px 8px',
-              borderRadius: 4,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <Text strong>{user.name}</Text>
-            <Text type="secondary">
-              最后访问：{user.lastVisit}
-            </Text>
-          </div>
-        ))}
-        {recentUsers.length > 50 && (
-          <div style={{ 
-            padding: '16px', 
-            textAlign: 'center',
-            color: '#999'
-          }}>
-            <Text type="secondary">还有 {recentUsers.length - 50} 条数据...</Text>
-          </div>
+      {/* 用户活动分析 */}
+      <Divider orientation="left">
+        <Title level={4} style={{ margin: 0 }}>
+          用户活动分析
+        </Title>
+      </Divider>
+      
+      <Card 
+        title={
+          <Space>
+            <UserOutlined />
+            <span>实时用户列表</span>
+            <Badge 
+              count={filteredAndSortedUsers.length} 
+              style={{ backgroundColor: '#52c41a' }} 
+            />
+          </Space>
+        }
+        extra={
+          <Space>
+            <Button 
+              icon={<ReloadOutlined />} 
+              onClick={handleRefreshUsers}
+              loading={userListLoading}
+              size="small"
+            >
+              刷新
+            </Button>
+          </Space>
+        }
+        style={{ marginTop: 16 }}
+      >
+        {/* 用户列表筛选工具栏 */}
+        <Row gutter={16} style={{ marginBottom: 16 }}>
+          <Col flex="auto">
+            <Search
+              placeholder="搜索用户名或地区..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{ width: '100%' }}
+              allowClear
+            />
+          </Col>
+          <Col>
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 120 }}
+              placeholder="状态筛选"
+            >
+              <Select.Option value="all">全部状态</Select.Option>
+              <Select.Option value={UserStatus.ONLINE}>在线</Select.Option>
+              <Select.Option value={UserStatus.OFFLINE}>离线</Select.Option>
+              <Select.Option value={UserStatus.AWAY}>离开</Select.Option>
+            </Select>
+          </Col>
+          <Col>
+            <Space>
+              <Button
+                size="small"
+                type={sortField === 'lastVisit' ? 'primary' : 'default'}
+                onClick={() => handleSort('lastVisit')}
+                icon={sortField === 'lastVisit' && sortOrder === 'asc' ? 
+                  <SortAscendingOutlined /> : <SortDescendingOutlined />}
+              >
+                最后访问
+              </Button>
+              <Button
+                size="small"
+                type={sortField === 'visitCount' ? 'primary' : 'default'}
+                onClick={() => handleSort('visitCount')}
+                icon={sortField === 'visitCount' && sortOrder === 'asc' ? 
+                  <SortAscendingOutlined /> : <SortDescendingOutlined />}
+              >
+                访问次数
+              </Button>
+              <Button
+                size="small"
+                type={sortField === 'duration' ? 'primary' : 'default'}
+                onClick={() => handleSort('duration')}
+                icon={sortField === 'duration' && sortOrder === 'asc' ? 
+                  <SortAscendingOutlined /> : <SortDescendingOutlined />}
+              >
+                在线时长
+              </Button>
+            </Space>
+          </Col>
+        </Row>
+
+        {/* 用户列表 */}
+        {filteredAndSortedUsers.length === 0 ? (
+          <Empty 
+            description="没有找到匹配的用户"
+            style={{ margin: '40px 0' }}
+          />
+        ) : (
+          <>
+            <List
+              dataSource={paginatedUsers}
+              loading={userListLoading}
+              renderItem={(user) => (
+                <List.Item
+                  style={{
+                    padding: '12px 16px',
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    backgroundColor: '#fafafa',
+                    border: '1px solid #f0f0f0',
+                    transition: 'all 0.3s',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f0f9ff';
+                    e.currentTarget.style.borderColor = '#1890ff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#fafafa';
+                    e.currentTarget.style.borderColor = '#f0f0f0';
+                  }}
+                >
+                  <List.Item.Meta
+                    avatar={
+                      <Badge 
+                        dot 
+                        color={statusConfig[user.status].color}
+                        offset={[-6, 6]}
+                      >
+                        <Avatar 
+                          src={user.avatar} 
+                          icon={<UserOutlined />}
+                          size={48}
+                        />
+                      </Badge>
+                    }
+                    title={
+                      <Space>
+                        <Text strong style={{ fontSize: 16 }}>
+                          {user.name}
+                        </Text>
+                        <Tag color={statusConfig[user.status].color}>
+                          {statusConfig[user.status].text}
+                        </Tag>
+                        <Tag color="blue">{user.location}</Tag>
+                      </Space>
+                    }
+                    description={
+                      <Space direction="vertical" size={4}>
+                        <Space>
+                          <ClockCircleOutlined />
+                          <Text type="secondary">
+                            最后访问：{user.lastVisit}
+                          </Text>
+                        </Space>
+                        <Space split={<Divider type="vertical" />}>
+                          <Text type="secondary">
+                            访问 {user.visitCount} 次
+                          </Text>
+                          <Text type="secondary">
+                            在线 {formatDuration(user.duration)}
+                          </Text>
+                          <Text type="secondary">
+                            设备：{user.device}
+                          </Text>
+                        </Space>
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+            
+            {/* 分页 */}
+            <div style={{ textAlign: 'center', marginTop: 16 }}>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredAndSortedUsers.length}
+                onChange={(page, size) => {
+                  setCurrentPage(page);
+                  setPageSize(size || pageSize);
+                }}
+                showSizeChanger
+                showQuickJumper
+                showTotal={(total, range) =>
+                  `第 ${range[0]}-${range[1]} 条，共 ${total} 条用户`
+                }
+                pageSizeOptions={['10', '20', '50', '100']}
+              />
+            </div>
+          </>
         )}
-      </div>
+      </Card>
     </Card>
   );
 };
