@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
       <Title level={2}>欢迎回来，</Title>
       <Card>
         <p>这是一个示例 Dashboard 页面。</p>
-        <p>您的角色是：</p>
+        <p>您的角色是：{userInfo?.role}</p>
         <p>您的权限包括：</p>
       </Card>
     </div>
