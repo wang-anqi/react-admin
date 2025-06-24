@@ -8,6 +8,8 @@ import { mkdir } from 'fs/promises';
 import authRoutes from './routes/auth';
 import usersRoutes from './routes/users';
 import rolesRoutes from './routes/roles'
+import dashboardRouter from './routes/dashboard';
+import chartsRouter from './routes/chart';
 
 // 导入数据库初始化
 import { initDatabase } from './database/db';
@@ -45,7 +47,12 @@ app.get('/health', (req, res) => {
 // API 路由
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/roles',rolesRoutes)
+app.use('/api/roles',rolesRoutes);
+// 仪表盘路由
+app.use('/api/dashboard', dashboardRouter);
+  
+// 图表数据路由
+app.use('/api/charts', chartsRouter);
 
 // 404 处理
 app.use('*', (req, res) => {

@@ -1,0 +1,124 @@
+/* src/pages/Dashboard/DashboardPage.css */
+.dashboard-page {
+    padding: 20px;
+    background-color: #f0f2f5;
+    min-height: 100vh;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.dashboard-subtitle {
+    color: #666;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.dashboard-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.dashboard-filters {
+    margin-bottom: 20px;
+}
+
+.kpi-row {
+    margin-bottom: 24px;
+}
+
+.kpi-card .ant-card-body {
+    padding: 16px;
+}
+
+.kpi-content {
+    display: flex;
+    align-items: center;
+    cursor: default;
+}
+
+.kpi-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    font-size: 24px;
+    color: white;
+}
+
+.kpi-info {
+    flex: 1;
+}
+
+.kpi-title {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.chart-container {
+    margin-bottom: 24px;
+}
+
+.chart-card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.09);
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+}
+
+.chart-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.chart-card .ant-card-head {
+    background-color: #fafafa;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .dashboard-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .kpi-card {
+        margin-bottom: 16px;
+    }
+
+    .chart-card {
+        margin-bottom: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+    .dashboard-page {
+        padding: 10px;
+    }
+
+    .dashboard-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
