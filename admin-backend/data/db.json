@@ -26,7 +26,25 @@
       "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.600Z",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTAyMzUwODUsImV4cCI6MTc1MDMyMTQ4NX0.4l664wGfnSNfUyBPKlhZ_euUOAzdwtj_AwG7ejTj23M"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTA3NjM4OTgsImV4cCI6MTc1MDg1MDI5OH0.RdAS2XoFDzJ3EMuVfhKsTxLmIzisZUrhGCQ32ZYKbpk"
+    },
+    {
+      "id": "userManage-1750577251273-j3z0kjguk",
+      "username": "managerBoss",
+      "email": "bossZhangsan@example.com",
+      "password": "$2a$10$eFwGKs3zi151s861LLTwweF8sPjwisqF1JXQ6R5Lm2OwFXkRo/Fsq",
+      "role": "managerBoss",
+      "status": "active",
+      "createdAt": "2025-06-22T07:27:31.273Z"
+    },
+    {
+      "id": "userManage-1750577525086-rjruyntby",
+      "username": "userBoss",
+      "email": "userBoss2san@example.com",
+      "password": "$2a$10$mGpuQPc8yni4RLww4Pd3L.pe2AhJzRCkbpIyvMNEiI/JA1lnMyZy.",
+      "role": "userBoss",
+      "status": "active",
+      "createdAt": "2025-06-22T07:32:05.086Z"
     }
   ],
   "roles": [
@@ -70,6 +88,12 @@
       "name": "user",
       "description": "普通用户",
       "permissionDes": "仅具查看权限",
+      "permissions": []
+    },
+    {
+      "id": 1750577489875,
+      "name": "userBoss",
+      "description": "高级用户",
       "permissions": []
     }
   ]

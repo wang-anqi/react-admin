@@ -13,7 +13,7 @@ import RoleManage from './pages/admin/roleManage';
 // import PermissionManage from './pages/admin/permissionsManage';
 import Dashboard from './pages/dashboard';
 import AppLayout from './pages/Layout/index'
-import Chart from './pages/chart';
+import Charts from './pages/chart';
 
 // 这里之后可以添加更多的页面组件
 const UserManagement = () => <div>User Management</div>;
@@ -32,7 +32,7 @@ const App: React.FC = () => {
             {/* 布局内所有页面统一由 Layout 包裹 */}
             <Route path="/" element={<AuthGuard><AppLayout /></AuthGuard>}>
               <Route index element={<Dashboard />} />
-              <Route path="chart" element={<Chart />} />
+              <Route path="chart" element={<Charts />} />
               <Route path="users" element={
                 <AuthGuard requiredRoles={['admin', 'manager']}>
                   <UserList />
