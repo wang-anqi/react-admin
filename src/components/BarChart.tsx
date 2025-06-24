@@ -24,7 +24,12 @@ interface BarData {
   seriesData: number[];
 }
 
-const BarChart: React.FC<{ data: BarData; loading?: boolean }> = ({ data, loading }) => {
+interface BarChartProps {
+  data: BarData;
+  loading?: boolean;
+}
+
+const BarChart: React.FC<BarChartProps> = ({ data, loading }) => {
   const chartRef = useRef<HTMLDivElement>(null);
   const chartInstance = useRef<echarts.ECharts | null>(null);
 
@@ -36,15 +41,52 @@ const BarChart: React.FC<{ data: BarData; loading?: boolean }> = ({ data, loadin
     
     // 清理函数
     return () => {
-      chartInstance.current?.dispose();
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     if (!chartInstance.current || loading) return;
     
+    // 数据验证和处理
+    if (!data || !data.xAxisData || !data.seriesData) {
+      console.warn('BarChart: 数据格式错误', data);
+      return;
+    }
+
+    // 确保数据数组存在且有内容
+    const xAxisData = Array.isArray(data.xAxisData) ? data.xAxisData : [];
+    const seriesData = Array.isArray(data.seriesData) ? data.seriesData : [];
+
+    // 如果没有数据，显示空状态
+    if (xAxisData.length === 0 || seriesData.length === 0) {
+      const emptyOption = {
+        title: {
+          text: '暂无数据',
+          left: 'center',
+          top: 'middle',
+          textStyle: {
+            fontSize: 16,
+            color: '#999'
+          }
+        }
+      };
+      chartInstance.current.setOption(emptyOption);
+      return;
+    }
+    
     const option = {
-      title: { text: '日访问量', left: 'center' },
+      title: { 
+        text: '日访问量', 
+        left: 'center',
+        textStyle: {
+          fontSize: 16,
+          fontWeight: 'bold'
+        }
+      },
       tooltip: {
         trigger: 'axis',
         formatter: '{b}: {c} 次'
@@ -57,10 +99,10 @@ const BarChart: React.FC<{ data: BarData; loading?: boolean }> = ({ data, loadin
       },
       xAxis: {
         type: 'category',
-        data: data.xAxisData,
+        data: xAxisData,
         axisLabel: {
           interval: 0,
-          rotate: data.xAxisData.length > 7 ? 45 : 0
+          rotate: xAxisData.length > 7 ? 45 : 0
         }
       },
       yAxis: {
@@ -70,7 +112,7 @@ const BarChart: React.FC<{ data: BarData; loading?: boolean }> = ({ data, loadin
       series: [{
         name: '访问量',
         type: 'bar',
-        data: data.seriesData,
+        data: seriesData,
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
             { offset: 0, color: '#83bff6' },
@@ -90,10 +132,19 @@ const BarChart: React.FC<{ data: BarData; loading?: boolean }> = ({ data, loadin
       }]
     };
 
-    chartInstance.current.setOption(option);
+    try {
+      chartInstance.current.setOption(option);
+    } catch (error) {
+      console.error('BarChart: 设置图表选项时出错', error);
+    }
     
     // 响应式调整
-    const resizeHandler = () => chartInstance.current?.resize();
+    const resizeHandler = () => {
+      if (chartInstance.current) {
+        chartInstance.current.resize();
+      }
+    };
+    
     window.addEventListener('resize', resizeHandler);
     
     return () => {

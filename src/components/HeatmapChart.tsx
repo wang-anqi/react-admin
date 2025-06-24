@@ -41,6 +41,12 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
     const chartInstance = useRef<echarts.ECharts | null>(null);
     const resizeObserver = useRef<ResizeObserver | null>(null);
 
+    // 验证日期格式的辅助函数
+    const isValidDate = (dateString: string): boolean => {
+        const date = new Date(dateString);
+        return !isNaN(date.getTime());
+    };
+
     // 初始化图表
     const initChart = useCallback(() => {
         if (!chartRef.current) return;
@@ -61,15 +67,23 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
     const updateChart = useCallback(() => {
         if (!chartInstance.current || loading) return;
 
+        // 数据验证
+        if (!data || !Array.isArray(data)) {
+            console.warn('HeatmapChart: 数据格式错误', data);
+            return;
+        }
+
         // 如果没有数据，显示空状态
-        if (!data || data.length === 0) {
+        if (data.length === 0) {
             chartInstance.current.setOption({
                 title: {
                     text: '用户行为热力图',
                     left: 'center',
+                    top: 'middle',
                     textStyle: {
                         color: '#999',
-                        fontWeight: 'normal'
+                        fontWeight: 'normal',
+                        fontSize: 16
                     }
                 },
                 graphic: {
@@ -86,17 +100,68 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
             return;
         }
 
+        // 过滤并验证数据
+        const validData = data.filter(item => {
+            return item && 
+                   typeof item.date === 'string' && 
+                   isValidDate(item.date) &&
+                   typeof item.hour === 'number' && 
+                   item.hour >= 0 && 
+                   item.hour <= 23 &&
+                   typeof item.value === 'number' && 
+                   !isNaN(item.value);
+        });
+
+        if (validData.length === 0) {
+            console.warn('HeatmapChart: 没有有效的数据点');
+            chartInstance.current.setOption({
+                title: {
+                    text: '用户行为热力图',
+                    left: 'center',
+                    top: 'middle',
+                    textStyle: {
+                        color: '#999',
+                        fontWeight: 'normal',
+                        fontSize: 16
+                    }
+                },
+                graphic: {
+                    type: 'text',
+                    left: 'center',
+                    top: 'middle',
+                    style: {
+                        text: '数据格式错误',
+                        fontSize: 16,
+                        fill: '#999'
+                    }
+                }
+            });
+            return;
+        }
+
         // 确定日期范围
-        const dates = Array.from(new Set(data.map(item => item.date)));
-        const minDate = new Date(Math.min(...dates.map(d => new Date(d).getTime())));
-        const maxDate = new Date(Math.max(...dates.map(d => new Date(d).getTime())));
+        const dates = Array.from(new Set(validData.map(item => item.date))).sort();
+        
+        let minDate: Date, maxDate: Date;
+        try {
+            minDate = new Date(dates[0]);
+            maxDate = new Date(dates[dates.length - 1]);
+            
+            // 验证日期是否有效
+            if (isNaN(minDate.getTime()) || isNaN(maxDate.getTime())) {
+                throw new Error('Invalid date range');
+            }
+        } catch (error) {
+            console.error('HeatmapChart: 日期范围计算错误', error);
+            return;
+        }
 
         // 处理大数据集 - 采样
         const maxPoints = 2000;
-        let processedData = data;
-        if (data.length > maxPoints) {
-            const step = Math.ceil(data.length / maxPoints);
-            processedData = data.filter((_, i) => i % step === 0);
+        let processedData = validData;
+        if (validData.length > maxPoints) {
+            const step = Math.ceil(validData.length / maxPoints);
+            processedData = validData.filter((_, i) => i % step === 0);
         }
 
         // 转换数据格式
@@ -107,7 +172,7 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
         ]);
 
         // 计算最大值和最小值
-        const values = data.map(d => d.value);
+        const values = processedData.map(d => d.value);
         const maxValue = Math.max(...values);
         const minValue = Math.min(...values);
 
@@ -125,14 +190,20 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
                 formatter: (params: any) => {
                     const value = params.value[2];
                     const date = new Date(params.value[0]);
+                    const hour = params.value[1];
+                    
+                    if (isNaN(date.getTime())) {
+                        return `数据异常`;
+                    }
+                    
                     return `
-            <div style="font-weight: bold; margin-bottom: 5px;">
-              ${date.toLocaleDateString()} ${params.value[1]}:00
-            </div>
-            <div>
-              活动量: <b style="color: #1890ff;">${value}</b>
-            </div>
-          `;
+                        <div style="font-weight: bold; margin-bottom: 5px;">
+                            ${date.toLocaleDateString()} ${hour}:00
+                        </div>
+                        <div>
+                            活动量: <b style="color: #1890ff;">${value}</b>
+                        </div>
+                    `;
                 },
                 backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 borderColor: '#eee',
@@ -161,7 +232,10 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
                 left: 30,
                 right: 30,
                 cellSize: ['auto', 15],
-                range: [minDate.toISOString().split('T')[0], maxDate.toISOString().split('T')[0]],
+                range: [
+                    minDate.toISOString().split('T')[0], 
+                    maxDate.toISOString().split('T')[0]
+                ],
                 itemStyle: {
                     borderWidth: 0.5,
                     borderColor: '#f0f0f0'
@@ -196,7 +270,11 @@ const HeatmapChart: React.FC<HeatmapChartProps> = ({ data, loading }) => {
             }]
         };
 
-        chartInstance.current.setOption(option);
+        try {
+            chartInstance.current.setOption(option);
+        } catch (error) {
+            console.error('HeatmapChart: 设置图表选项时出错', error);
+        }
     }, [data, loading]);
 
     // 响应式调整

@@ -1,11 +1,10 @@
 // src/pages/Dashboard/index.tsx
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
-import { Card, Row, Col, Spin, Select, Button } from 'antd';
+import { Card, Row, Col, Spin, Select, Button, message } from 'antd';
 import { DownloadOutlined, SyncOutlined } from '@ant-design/icons';
 import HasPermission from '@/components/HasPermission';
 import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
-import AxiosInstance from '../../services/auth';
 import { formatNumber, formatCurrency } from '@/utils/formatters';
 import './DashboardPage.css';
 
@@ -15,28 +14,160 @@ const PieChart = lazy(() => import('../../components/PieChart'));
 const LineChart = lazy(() => import('../../components/LineChart'));
 const HeatmapChart = lazy(() => import('../../components/HeatmapChart'));
 
+// Mock数据生成函数
+const getMockDashboardData = (timeRange: string) => {
+  const baseData = {
+    week: {
+      totalUsers: 12580,
+      todayOrders: 156,
+      totalSales: 89650,
+      conversionRate: 3.2,
+    },
+    month: {
+      totalUsers: 45620,
+      todayOrders: 234,
+      totalSales: 356800,
+      conversionRate: 4.1,
+    },
+    quarter: {
+      totalUsers: 128900,
+      todayOrders: 189,
+      totalSales: 1250000,
+      conversionRate: 3.8,
+    }
+  };
+
+  const currentData = baseData[timeRange as keyof typeof baseData] || baseData.week;
+
+  // 原始数据
+  const rawBarData = [
+    { category: '周一', value: 320, label: '访问量' },
+    { category: '周二', value: 280, label: '访问量' },
+    { category: '周三', value: 360, label: '访问量' },
+    { category: '周四', value: 290, label: '访问量' },
+    { category: '周五', value: 450, label: '访问量' },
+    { category: '周六', value: 380, label: '访问量' },
+    { category: '周日', value: 410, label: '访问量' },
+  ];
+
+  const rawLineData = [
+    { date: '06-18', value: 150, category: '用户增长' },
+    { date: '06-19', value: 180, category: '用户增长' },
+    { date: '06-20', value: 165, category: '用户增长' },
+    { date: '06-21', value: 220, category: '用户增长' },
+    { date: '06-22', value: 195, category: '用户增长' },
+    { date: '06-23', value: 240, category: '用户增长' },
+    { date: '06-24', value: 280, category: '用户增长' },
+  ];
+
+  const rawHeatmapData = [
+    { hour: 0, day: 'Mon', value: 15 },
+    { hour: 1, day: 'Mon', value: 8 },
+    { hour: 2, day: 'Mon', value: 5 },
+    { hour: 3, day: 'Mon', value: 3 },
+    { hour: 4, day: 'Mon', value: 2 },
+    { hour: 5, day: 'Mon', value: 4 },
+    { hour: 6, day: 'Mon', value: 12 },
+    { hour: 7, day: 'Mon', value: 25 },
+    { hour: 8, day: 'Mon', value: 45 },
+    { hour: 9, day: 'Mon', value: 65 },
+    { hour: 10, day: 'Mon', value: 85 },
+    { hour: 11, day: 'Mon', value: 90 },
+    { hour: 12, day: 'Mon', value: 80 },
+    { hour: 13, day: 'Mon', value: 75 },
+    { hour: 14, day: 'Mon', value: 88 },
+    { hour: 15, day: 'Mon', value: 92 },
+    { hour: 16, day: 'Mon', value: 78 },
+    { hour: 17, day: 'Mon', value: 65 },
+    { hour: 18, day: 'Mon', value: 45 },
+    { hour: 19, day: 'Mon', value: 35 },
+    { hour: 20, day: 'Mon', value: 28 },
+    { hour: 21, day: 'Mon', value: 22 },
+    { hour: 22, day: 'Mon', value: 18 },
+    { hour: 23, day: 'Mon', value: 12 },
+    // 其他天的数据...
+    { hour: 0, day: 'Tue', value: 12 },
+    { hour: 1, day: 'Tue', value: 6 },
+    { hour: 2, day: 'Tue', value: 4 },
+    { hour: 8, day: 'Tue', value: 48 },
+    { hour: 9, day: 'Tue', value: 68 },
+    { hour: 10, day: 'Tue', value: 88 },
+    { hour: 14, day: 'Tue', value: 85 },
+    { hour: 15, day: 'Tue', value: 95 },
+    { hour: 16, day: 'Tue', value: 82 },
+  ];
+
+  return {
+    ...currentData,
+    // 转换为BarChart期望的格式
+    barData: {
+      xAxisData: rawBarData.map(item => item.category),
+      seriesData: rawBarData.map(item => item.value)
+    },
+    // 保持PieChart原有格式
+    pieData: [
+      { name: '新用户', value: 45, color: '#1890ff' },
+      { name: '老用户', value: 35, color: '#52c41a' },
+      { name: '访客', value: 20, color: '#faad14' },
+    ],
+    // 转换为LineChart期望的格式
+    lineData: [{
+      name: '用户增长',
+      data: rawLineData.map(item => ({
+        date: `2024-${item.date}`,
+        value: item.value
+      }))
+    }],
+    // 转换为HeatmapChart期望的格式
+    heatmapData: rawHeatmapData.map(item => {
+      // 将day转换为具体的日期
+      const dayMap: { [key: string]: string } = {
+        'Mon': '2024-06-17',
+        'Tue': '2024-06-18',
+        'Wed': '2024-06-19',
+        'Thu': '2024-06-20',
+        'Fri': '2024-06-21',
+        'Sat': '2024-06-22',
+        'Sun': '2024-06-23'
+      };
+      
+      return {
+        date: dayMap[item.day] || '2024-06-17',
+        hour: item.hour,
+        value: item.value
+      };
+    })
+  };
+};
+
 const Dashboard: React.FC = () => {
   const { userInfo } = useSelector((state: RootState) => state.user);
   const [timeRange, setTimeRange] = useState<string>('week');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  // 获取仪表盘数据
-  const { data: dashboardData, refetch, loading: dataLoading } = AxiosInstance('/api/dashboard', {
-    params: { range: timeRange },
-    onSuccess: () => setLoading(false),
-    onError: () => setLoading(false)
-  });
+  // 获取仪表盘数据 - 使用Mock数据
+  const dashboardData = useMemo(() => {
+    return getMockDashboardData(timeRange);
+  }, [timeRange]);
 
   // 处理时间范围变化
   const handleTimeRangeChange = (value: string) => {
     setTimeRange(value);
     setLoading(true);
+    // 模拟异步加载
+    setTimeout(() => {
+      setLoading(false);
+    }, 800);
   };
 
   // 刷新数据
   const handleRefresh = () => {
     setLoading(true);
-    refetch();
+    // 模拟刷新延迟
+    setTimeout(() => {
+      setLoading(false);
+      message.success('数据刷新成功');
+    }, 1000);
   };
 
   // 导出数据
@@ -87,13 +218,6 @@ const Dashboard: React.FC = () => {
     { label: '近30天', value: 'month' },
     { label: '近90天', value: 'quarter' }
   ];
-
-  // 数据加载状态处理
-  useEffect(() => {
-    if (dataLoading) {
-      setLoading(true);
-    }
-  }, [dataLoading]);
 
   return (
     <div className="dashboard-page">
@@ -171,7 +295,7 @@ const Dashboard: React.FC = () => {
             >
               <Suspense fallback={<Spin tip="加载柱状图..." />}>
                 <BarChart
-                  data={dashboardData?.barData || []}
+                  data={dashboardData?.barData || { xAxisData: [], seriesData: [] }}
                   loading={loading}
                 />
               </Suspense>

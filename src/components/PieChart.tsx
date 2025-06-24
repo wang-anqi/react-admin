@@ -22,6 +22,7 @@ echarts.use([
 interface PieData {
   name: string;
   value: number;
+  color?: string;
 }
 
 interface PieChartProps {
@@ -41,17 +42,56 @@ const PieChart: React.FC<PieChartProps> = ({ data, loading }) => {
     
     // 清理函数
     return () => {
-      chartInstance.current?.dispose();
+      if (chartInstance.current) {
+        chartInstance.current.dispose();
+        chartInstance.current = null;
+      }
     };
   }, []);
 
   useEffect(() => {
     if (!chartInstance.current || loading) return;
     
+    // 数据验证和处理
+    if (!data || !Array.isArray(data)) {
+      console.warn('PieChart: 数据格式错误', data);
+      return;
+    }
+
+    // 过滤有效数据
+    const validData = data.filter(item => {
+      return item && 
+             typeof item.name === 'string' && 
+             typeof item.value === 'number' && 
+             !isNaN(item.value) && 
+             item.value >= 0;
+    });
+
+    // 如果没有有效数据，显示空状态
+    if (validData.length === 0) {
+      const emptyOption = {
+        title: {
+          text: '暂无数据',
+          left: 'center',
+          top: 'middle',
+          textStyle: {
+            fontSize: 16,
+            color: '#999'
+          }
+        }
+      };
+      chartInstance.current.setOption(emptyOption);
+      return;
+    }
+    
     const option = {
       title: { 
         text: '数据占比分析',
-        left: 'center'
+        left: 'center',
+        textStyle: {
+          fontSize: 16,
+          fontWeight: 'bold'
+        }
       },
       tooltip: {
         trigger: 'item',
@@ -60,7 +100,7 @@ const PieChart: React.FC<PieChartProps> = ({ data, loading }) => {
       legend: {
         orient: 'vertical',
         left: 'left',
-        data: data.map(item => item.name)
+        data: validData.map(item => item.name)
       },
       series: [{
         name: '占比',
@@ -86,14 +126,29 @@ const PieChart: React.FC<PieChartProps> = ({ data, loading }) => {
         labelLine: {
           show: false
         },
-        data: data
+        data: validData.map((item, index) => ({
+          name: item.name,
+          value: item.value,
+          itemStyle: item.color ? {
+            color: item.color
+          } : undefined
+        }))
       }]
     };
 
-    chartInstance.current.setOption(option);
+    try {
+      chartInstance.current.setOption(option);
+    } catch (error) {
+      console.error('PieChart: 设置图表选项时出错', error);
+    }
     
     // 响应式调整
-    const resizeHandler = () => chartInstance.current?.resize();
+    const resizeHandler = () => {
+      if (chartInstance.current) {
+        chartInstance.current.resize();
+      }
+    };
+    
     window.addEventListener('resize', resizeHandler);
     
     return () => {
