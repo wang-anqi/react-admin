@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import type { RootState } from '@/store';
 import { formatNumber, formatCurrency } from '@/utils/formatters';
 import './DashboardPage.css';
+import * as XLSX from 'xlsx';
 
 // 懒加载图表组件
 const BarChart = lazy(() => import('../../components/BarChart'));
@@ -171,10 +172,132 @@ const Dashboard: React.FC = () => {
   };
 
   // 导出数据
-  const handleExport = () => {
-    // 实际项目中这里会实现数据导出逻辑
-    message.success('数据导出成功');
-  };
+  // const handleExport = () => {
+  //   // 实际项目中这里会实现数据导出逻辑
+  //   message.success('数据导出成功');
+  // };
+
+
+// 在Dashboard组件中替换原有的handleExport函数
+const handleExport = () => {
+  try {
+    // 创建新的工作簿
+    const workbook = XLSX.utils.book_new();
+    
+    // 1. KPI数据工作表
+    const kpiWorksheetData = [
+      ['指标名称', '数值', '说明', '更新时间'],
+      ...kpiData.map(kpi => [
+        kpi.title,
+        kpi.value,
+        kpi.tooltip,
+        new Date().toLocaleString()
+      ])
+    ];
+    const kpiWorksheet = XLSX.utils.aoa_to_sheet(kpiWorksheetData);
+    XLSX.utils.book_append_sheet(workbook, kpiWorksheet, 'KPI指标');
+
+    // 2. 访问量数据工作表
+    const barWorksheetData = [
+      ['时间', '访问量'],
+      ...dashboardData.barData.xAxisData.map((category, index) => [
+        category,
+        dashboardData.barData.seriesData[index]
+      ])
+    ];
+    const barWorksheet = XLSX.utils.aoa_to_sheet(barWorksheetData);
+    XLSX.utils.book_append_sheet(workbook, barWorksheet, '访问量分析');
+
+    // 3. 数据占比工作表
+    const pieWorksheetData = [
+      ['类别', '数值', '占比'],
+      ...dashboardData.pieData.map(item => {
+        const total = dashboardData.pieData.reduce((sum, data) => sum + data.value, 0);
+        const percentage = ((item.value / total) * 100).toFixed(1) + '%';
+        return [item.name, item.value, percentage];
+      })
+    ];
+    const pieWorksheet = XLSX.utils.aoa_to_sheet(pieWorksheetData);
+    XLSX.utils.book_append_sheet(workbook, pieWorksheet, '数据占比');
+
+    // 4. 用户增长趋势工作表
+    const lineWorksheetData = [
+      ['日期', '用户增长数'],
+      ...dashboardData.lineData[0].data.map(item => [
+        item.date,
+        item.value
+      ])
+    ];
+    const lineWorksheet = XLSX.utils.aoa_to_sheet(lineWorksheetData);
+    XLSX.utils.book_append_sheet(workbook, lineWorksheet, '用户增长趋势');
+
+    // 5. 热力图数据工作表（如果有权限）
+    let heatmapWorksheet = null;
+    if (dashboardData.heatmapData && dashboardData.heatmapData.length > 0) {
+      const heatmapWorksheetData = [
+        ['日期', '小时', '活跃度'],
+        ...dashboardData.heatmapData.map(item => [
+          item.date,
+          `${item.hour}:00`,
+          item.value
+        ])
+      ];
+      heatmapWorksheet = XLSX.utils.aoa_to_sheet(heatmapWorksheetData);
+      XLSX.utils.book_append_sheet(workbook, heatmapWorksheet, '用户行为热力图');
+    }
+
+    // 6. 数据汇总工作表
+    const summaryWorksheetData = [
+      ['数据汇总报告'],
+      [''],
+      ['导出时间', new Date().toLocaleString()],
+      ['数据时间范围', timeRangeOptions.find(opt => opt.value === timeRange)?.label || ''],
+      ['导出用户', userInfo?.username || ''],
+      [''],
+      ['数据说明'],
+      ['1. KPI指标：包含总用户数、今日订单、销售额、转化率等关键指标'],
+      ['2. 访问量分析：按时间维度统计的访问量数据'],
+      ['3. 数据占比：新用户、老用户、访客的占比分析'],
+      ['4. 用户增长趋势：近期用户增长的趋势变化'],
+      ['5. 用户行为热力图：用户在不同时间段的活跃度分布（需要管理员权限）'],
+      [''],
+      ['注意事项'],
+      ['- 数据仅供参考，请以实时系统数据为准'],
+      ['- 导出数据基于当前选择的时间范围'],
+      ['- 如需更详细的数据分析，请联系系统管理员']
+    ];
+    const summaryWorksheet = XLSX.utils.aoa_to_sheet(summaryWorksheetData);
+    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, '数据说明');
+
+    // 设置列宽
+    const setColumnWidths = (worksheet: XLSX.WorkSheet, widths: number[]) => {
+      const cols = widths.map(width => ({ width }));
+      worksheet['!cols'] = cols;
+    };
+
+    // 为各个工作表设置合适的列宽
+    setColumnWidths(kpiWorksheet, [15, 15, 30, 20]);
+    setColumnWidths(barWorksheet, [12, 12]);
+    setColumnWidths(pieWorksheet, [12, 10, 10, 12]);
+    setColumnWidths(lineWorksheet, [15, 15]);
+    if (heatmapWorksheet) {
+      setColumnWidths(heatmapWorksheet, [15, 10, 12]);
+    }
+    setColumnWidths(summaryWorksheet, [50]);
+
+    // 生成文件名
+    const timeRangeLabel = timeRangeOptions.find(opt => opt.value === timeRange)?.label || '';
+    const fileName = `仪表盘数据_${timeRangeLabel}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+
+    // 导出文件
+    XLSX.writeFile(workbook, fileName);
+    
+    message.success('数据导出成功！');
+  } catch (error) {
+    console.error('导出数据时发生错误:', error);
+    message.error('数据导出失败，请重试');
+  }
+};
 
   // KPI卡片数据
   const kpiData = useMemo(() => {
