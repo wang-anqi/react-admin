@@ -149,6 +149,31 @@ const RoleManage: React.FC = () => {
   };
 
   // 删除角色 - 使用 Redux action
+  // const handleDelete = async (record: Role) => {
+  //   try {
+  //     console.log('准备删除角色:', record.name, 'ID:', record.id);
+
+  //     // 使用 Redux action 删除角色，自动处理前后端同步
+  //     const result = await dispatch(deleteRole(record.id));
+
+  //     if (deleteRole.fulfilled.match(result)) {
+  //       message.success(`角色 "${record.name}" 删除成功`);
+  //       console.log('角色删除成功，Redux 状态已同步');
+
+  //       // 删除成功后刷新列表
+  //       dispatch(fetchRoles());
+  //       dispatch(incrementRoleTreeVersion())
+  //     } else {
+  //       // 如果删除失败，error 会通过 useEffect 显示
+  //       console.log('角色删除失败');
+  //       message.error('角色删除失败')
+  //     }
+  //   } catch (error) {
+  //     console.error('删除角色异常:', error);
+  //     message.error('删除角色时发生异常');
+  //   }
+  // };
+  // 删除角色 - 使用 Redux action
   const handleDelete = async (record: Role) => {
     try {
       console.log('准备删除角色:', record.name, 'ID:', record.id);
@@ -162,11 +187,11 @@ const RoleManage: React.FC = () => {
 
         // 删除成功后刷新列表
         dispatch(fetchRoles());
-        dispatch(incrementRoleTreeVersion())
+
+        // 增加角色树版本号，触发角色树刷新
+        dispatch(incrementRoleTreeVersion());
       } else {
-        // 如果删除失败，error 会通过 useEffect 显示
-        console.log('角色删除失败');
-        message.error('角色删除失败')
+        message.error('角色删除失败');
       }
     } catch (error) {
       console.error('删除角色异常:', error);
@@ -450,7 +475,7 @@ const RoleManage: React.FC = () => {
               <Row gutter={[16, 12]}>
                 {AVAILABLE_PERMISSIONS.map(permission => {
                   const disabled = isUserRole && !USER_ALLOWED_PERMISSIONS.includes(permission.value);
-                  
+
                   return (
                     <Col span={8} key={permission.value}>
                       <Checkbox value={permission.value} disabled={disabled}>

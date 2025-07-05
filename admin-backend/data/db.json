@@ -27,7 +27,7 @@
       "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.600Z",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTE2OTI1NTksImV4cCI6MTc1MTc3ODk1OX0.qRDppKWcHMKBkeejGu1IOP-5JHgzZoI3mcqtZ9gORIA"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTE3MDkwMzcsImV4cCI6MTc1MTc5NTQzN30.w50j-nycgENyZGwHmriGvHwZncKBW-kqoD3ahJooO3I"
     },
     {
       "id": "userManage-1750577251273-j3z0kjguk",
@@ -46,6 +46,24 @@
       "role": "userBoss",
       "status": "active",
       "createdAt": "2025-06-22T07:32:05.086Z"
+    },
+    {
+      "id": "userManage-1751703984503-snke8ftp8",
+      "username": "user2",
+      "email": "user2@example.com",
+      "password": "$2a$10$ybGbpyJvqMPDcWmQWlnz9uqnm.fpaUPm968HLCy8bo4sPuewa55EW",
+      "role": "user",
+      "status": "active",
+      "createdAt": "2025-07-05T08:26:24.503Z"
+    },
+    {
+      "id": "userManage-1751706717275-jyupjlvs5",
+      "username": "managerTemp1",
+      "email": "managerTemp1@example.com",
+      "password": "$2a$10$4e433J5.n45OkBUI8EcdmejmY55tCz7jX3bThCImXFtMWrNGuaiqW",
+      "role": "manager_temp",
+      "status": "active",
+      "createdAt": "2025-07-05T09:11:57.275Z"
     }
   ],
   "roles": [
@@ -95,6 +113,35 @@
       "id": 1750577489875,
       "name": "userBoss",
       "description": "高级用户",
+      "permissions": []
+    },
+    {
+      "id": 1751706690996,
+      "name": "manager_temp",
+      "description": "临时管理员",
+      "permissions": [
+        "user:view",
+        "role:view"
+      ]
+    },
+    {
+      "id": 1751707582034,
+      "name": "manager_ing",
+      "description": "管理员ing",
+      "permissions": [
+        "user:add"
+      ]
+    },
+    {
+      "id": 1751707865263,
+      "name": "user_test1",
+      "description": "测试用户1",
+      "permissions": []
+    },
+    {
+      "id": 1751708211429,
+      "name": "user_test2",
+      "description": "测试用户2",
       "permissions": []
     }
   ]

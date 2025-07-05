@@ -14,73 +14,37 @@ import {
 } from 'antd';
 import { ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import axiosInstance from '../../services/auth';
-import {RootState} from '../../store';
-import { useSelector} from 'react-redux';
-
-
+import { RootState } from '../../store';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  fetchRoleTree,
+  selectRoleTree,
+  selectRoleTreeLoading,
+  selectRoleTreeError,
+  selectRoleTreeVersion,
+  clearError
+} from '../../store/rolesSlice';
 
 interface User {
   id: number;
   username: string;
   email?: string;
-  // role: 'admin' | 'manager' | 'user';
   role: string;
 }
 
-interface RoleTreeItem {
-  title: string;
-  key: string;
-  children?: RoleTreeItem[];
-};
-
-
-
-// Mock 数据
-const mockRoles = [
-  {
-    title: '管理员',
-    key: 'admin',
-    children: [
-      { title: '系统管理员', key: 'admin:system' },
-      { title: '权限管理员', key: 'admin:permission' }
-    ]
-  },
-  {
-    title: '用户组',
-    key: 'user',
-    children: [
-      { title: '普通用户', key: 'user:common' },
-      { title: '高级用户', key: 'user:vip' }
-    ]
-  }
-];
-
-
-// 获取用户列表
-// const res = await axiosInstance.get('/users/usersList');
-// //res.data.data 注意数据包裹关系
-// setUsers(res.data.data);
-
-const mockUsers = [
-  { id: 1, username: 'alice', email: 'alice@example.com', role: 'admin:system' },
-  { id: 2, username: 'bob', email: 'bob@example.com', role: 'user:vip' },
-  { id: 3, username: 'charlie', email: 'charlie@example.com', role: 'user:common' },
-];
-
-
-
-
 const RoleUsers: React.FC = () => {
+  const dispatch = useDispatch();
   const [selectedRole, setSelectedRole] = useState<string>('');
-  const [filteredUsers, setFilteredUsers] = useState(mockUsers);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [search, setSearch] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([]);
 
-
-  const [rolesTree, setRolesTree] = useState<RoleTreeItem[]>([])
-  const roleTreeVersion = useSelector((state: RootState) => state.roles.roleTreeVersion);
+  // 从 Redux 获取角色树数据
+  const roleTree = useSelector(selectRoleTree);
+  const treeLoading = useSelector(selectRoleTreeLoading);
+  const treeError = useSelector(selectRoleTreeError);
+  const roleTreeVersion = useSelector(selectRoleTreeVersion);
 
   const columns = [
     { title: '用户名', dataIndex: 'username', key: 'username' },
@@ -97,81 +61,85 @@ const RoleUsers: React.FC = () => {
     }
   ];
 
-
-
   const fetchUsers = async () => {
-    setLoading(true);
     try {
       const res = await axiosInstance.get('/users/usersList');
-      //res.data.data 注意数据包裹关系
       setUsers(res.data.data);
-      console.log('res.data.data', res.data.data);
-
-
-
+      console.log('用户列表数据:', res.data.data);
     } catch (error) {
       message.error('获取用户列表失败');
-    } finally {
-      setLoading(false);
     }
   };
 
-
-  const fetchRolesTree = async () => {
-    setLoading(true);
-    try {
-      const res = await axiosInstance.get('/roles/rolesTree');
-      //res.data.data 注意数据包裹关系
-      setRolesTree(res.data.data);
-      console.log('角色 res.data.data', res.data.data);
-
-
-
-    } catch (error) {
-      message.error('获取角色树数据失败');
-    } finally {
-      setLoading(false);
+  // 错误处理
+  useEffect(() => {
+    if (treeError) {
+      message.error(`获取角色树失败: ${treeError}`);
+      console.error('角色树错误:', treeError);
+      // 3秒后自动清除错误状态
+      setTimeout(() => {
+        dispatch(clearError());
+      }, 3000);
     }
-  };
+  }, [treeError, dispatch]);
 
+  // 初始化加载用户数据
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
+  // 当角色树版本变化时重新获取角色树
+  useEffect(() => {
+    console.log('角色树版本变化:', roleTreeVersion);
+    dispatch(fetchRoleTree());
+  }, [roleTreeVersion, dispatch]);
+
+  // 当角色选择、搜索词或用户数据变化时过滤用户
   useEffect(() => {
     console.log('selectedRole', selectedRole);
     console.log('search', search);
 
-
     const usersFilter = users.filter(user => {
       const matchRole = selectedRole ? user.role === selectedRole : true;
-      const matchSearch = user.username.includes(search) || user.email?.includes(search);
+      const matchSearch = user.username.includes(search) || (user.email && user.email.includes(search));
       return matchRole && matchSearch;
     });
     setFilteredUsers(usersFilter);
-  }, [selectedRole, search]);
+  }, [selectedRole, search, users]);
 
   const handleDeleteBatch = () => {
     message.success(`已移除 ${selectedRowKeys.length} 个用户`);
     setSelectedRowKeys([]);
   };
 
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  useEffect(()=>{
-    fetchRolesTree();
-  },[roleTreeVersion])
-
-
   return (
     <Row gutter={16}>
       <Col span={6}>
-        <Card title="角色树">
-          <Tree
-            treeData={rolesTree}
-            onSelect={(keys) => setSelectedRole(keys[0] as string)}
-            selectedKeys={[selectedRole]}
-          />
+        <Card
+          title="角色树"
+          loading={treeLoading}
+          extra={
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => dispatch(fetchRoleTree())}
+              size="small"
+            />
+          }
+        >
+          {treeError ? (
+            <div style={{ color: 'red', textAlign: 'center' }}>
+              加载角色树失败: {treeError}
+              <Button onClick={() => dispatch(fetchRoleTree())} style={{ marginTop: 10 }}>
+                重试
+              </Button>
+            </div>
+          ) : (
+            <Tree
+              treeData={roleTree}
+              onSelect={(keys) => setSelectedRole(keys[0] as string)}
+              selectedKeys={[selectedRole]}
+            />
+          )}
         </Card>
       </Col>
 
@@ -183,8 +151,7 @@ const RoleUsers: React.FC = () => {
               <Input.Search
                 placeholder="搜索用户名或邮箱"
                 allowClear
-                onSearch={(value)=>setSearch(value)}
-                // onClick={(value) => setSearch(value)}
+                onSearch={(value) => setSearch(value)}
                 style={{ width: 240 }}
               />
               <Button icon={<ReloadOutlined />} onClick={() => setSearch('')}>
@@ -207,13 +174,13 @@ const RoleUsers: React.FC = () => {
             </Space>
           }
         >
-            <Table
-              rowKey="id"
-              rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
-              columns={columns}
-              dataSource={filteredUsers}
-              pagination={{ pageSize: 5 }}
-            />
+          <Table
+            rowKey="id"
+            rowSelection={{ selectedRowKeys, onChange: setSelectedRowKeys }}
+            columns={columns}
+            dataSource={filteredUsers}
+            pagination={{ pageSize: 5 }}
+          />
         </Card>
       </Col>
     </Row>
