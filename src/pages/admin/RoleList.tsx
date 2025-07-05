@@ -20,6 +20,7 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, EyeOutlined, ReloadOutlined
 import { useSelector, useDispatch } from 'react-redux';
 import type { AppDispatch } from '../../store';
 import {
+  incrementRoleTreeVersion,
   fetchRoles,
   createRole,
   updateRole,
@@ -30,6 +31,7 @@ import {
   selectLastUpdated,
   clearError
 } from '../../store/rolesSlice';
+import { permission } from 'process';
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -63,6 +65,8 @@ const AVAILABLE_PERMISSIONS = [
   { value: 'system:log', label: '系统日志' },
 ];
 
+const USER_ALLOWED_PERMISSIONS = ['user:view', 'user:add', 'user:edit'];
+
 const RoleManage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
@@ -78,6 +82,15 @@ const RoleManage: React.FC = () => {
   const [viewingRole, setViewingRole] = useState<Role | undefined>();
   const [submitting, setSubmitting] = useState(false); // 添加提交状态
   const [form] = Form.useForm();
+  // const [roleName, setRoleName] = useState<string>('');
+
+  // useEffect(() => {
+  //   const name = form.getFieldValue('name');
+  //   if (name) setRoleName(name);
+  // }, [form]);
+  // 替代原来的 useState + useEffect
+  const watchedRoleName = Form.useWatch('name', form);
+  const isUserRole = watchedRoleName?.startsWith('user_');
 
   // 初始化加载角色数据
   useEffect(() => {
@@ -149,6 +162,7 @@ const RoleManage: React.FC = () => {
 
         // 删除成功后刷新列表
         dispatch(fetchRoles());
+        dispatch(incrementRoleTreeVersion())
       } else {
         // 如果删除失败，error 会通过 useEffect 显示
         console.log('角色删除失败');
@@ -403,10 +417,18 @@ const RoleManage: React.FC = () => {
             name="name"
             rules={[
               { required: true, message: '请输入角色名称' },
-              { min: 2, max: 20, message: '角色名称长度应在2-20个字符之间' }
+              { min: 2, max: 20, message: '角色名称长度应在2-20个字符之间' },
+              {
+                validator: (_, value) => {
+                  if (!value || /^manager_[a-zA-Z0-9_]+$/.test(value) || /^user_[a-zA-Z0-9_]+$/.test(value)) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('角色名称必须以 manager_ 或 user_ 开头'))
+                }
+              }
             ]}
           >
-            <Input placeholder="请输入角色名称，如：manager、user等" />
+            <Input placeholder="请输入角色名称，角色名称必须以 manager_ 或 user_ 开头，如果magager_admin " />
           </Form.Item>
 
           <Form.Item
@@ -423,19 +445,26 @@ const RoleManage: React.FC = () => {
           </Form.Item>
 
           <Form.Item label="权限配置" name="permissions">
-          
-              <Checkbox.Group style={{ width: '100%' }}>
-                <Row gutter={[16, 12]}>
-                  {AVAILABLE_PERMISSIONS.map(permission => (
+
+            <Checkbox.Group style={{ width: '100%' }}>
+              <Row gutter={[16, 12]}>
+                {AVAILABLE_PERMISSIONS.map(permission => {
+                  const disabled = isUserRole && !USER_ALLOWED_PERMISSIONS.includes(permission.value);
+                  
+                  return (
                     <Col span={8} key={permission.value}>
-                      <Checkbox value={permission.value}>
+                      <Checkbox value={permission.value} disabled={disabled}>
                         <span style={{ fontSize: '13px' }}>{permission.label}</span>
+                        {disabled && (
+                          <span style={{ color: '#999', marginLeft: 4, fontSize: '12px' }}>(不可选)</span>
+                        )}
                       </Checkbox>
                     </Col>
-                  ))}
-                </Row>
-              </Checkbox.Group>
-          
+                  );
+                })}
+              </Row>
+            </Checkbox.Group>
+
 
           </Form.Item>
         </Form>

@@ -14,6 +14,8 @@ import {
 } from 'antd';
 import { ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
 import axiosInstance from '../../services/auth';
+import {RootState} from '../../store';
+import { useSelector} from 'react-redux';
 
 
 
@@ -78,7 +80,7 @@ const RoleUsers: React.FC = () => {
 
 
   const [rolesTree, setRolesTree] = useState<RoleTreeItem[]>([])
-
+  const roleTreeVersion = useSelector((state: RootState) => state.roles.roleTreeVersion);
 
   const columns = [
     { title: '用户名', dataIndex: 'username', key: 'username' },
@@ -154,9 +156,11 @@ const RoleUsers: React.FC = () => {
 
   useEffect(() => {
     fetchUsers();
-    fetchRolesTree();
-
   }, []);
+
+  useEffect(()=>{
+    fetchRolesTree();
+  },[roleTreeVersion])
 
 
   return (

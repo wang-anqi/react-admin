@@ -14,7 +14,7 @@
 // export const fetchRoles = createAsyncThunk('roles/fetchRoles', async () => {
 //   const res = await axiosInstance.get('/roles');
 //   console.log('API 返回的原始数据:', res.data);
-  
+
 //   // 后端返回格式：{code: 200, data: Array(4)} 或直接返回 Array
 //   // 先检查是否有 data 字段，如果有就使用 data，否则直接使用 res.data
 //   let rolesData;
@@ -27,15 +27,15 @@
 //   }
 //   // 多层扁平化处理，确保得到最终的角色数组
 //   let finalRolesData = rolesData;
-  
+
 //   // 如果是嵌套数组，递归扁平化直到得到对象数组
 //   while (Array.isArray(finalRolesData) && Array.isArray(finalRolesData[0])) {
 //     finalRolesData = finalRolesData.flat();
 //   }
-  
+
 //   console.log('处理后的角色数据:', finalRolesData);
 //   console.log('第一个角色对象:', finalRolesData[0]);
-  
+
 //   return finalRolesData;
 
 // });
@@ -99,13 +99,13 @@ export interface Role {
 
 // 异步请求角色列表
 export const fetchRoles = createAsyncThunk(
-  'roles/fetchRoles', 
+  'roles/fetchRoles',
   async (_, { rejectWithValue }) => {
     try {
       console.log('正在获取角色数据...');
       const res = await axiosInstance.get('/roles');
       console.log('API 返回的原始数据:', res.data);
-      
+
       // 后端返回格式：{code: 200, data: Array} 
       let rolesData;
       if (res.data && typeof res.data === 'object' && 'data' in res.data) {
@@ -119,15 +119,15 @@ export const fetchRoles = createAsyncThunk(
         // 如果直接返回数组
         rolesData = res.data;
       }
-      
+
       // 多层扁平化处理，确保得到最终的角色数组
       let finalRolesData = rolesData;
-      
+
       // 如果是嵌套数组，递归扁平化直到得到对象数组
       while (Array.isArray(finalRolesData) && Array.isArray(finalRolesData[0])) {
         finalRolesData = finalRolesData.flat();
       }
-      
+
       // 数据清洗和标准化
       const cleanedRoles = finalRolesData.map((role: any) => ({
         id: role.id,
@@ -136,10 +136,10 @@ export const fetchRoles = createAsyncThunk(
         permissionDes: role.permissionDes || '',
         permissions: Array.isArray(role.permissions) ? role.permissions : []
       }));
-      
+
       console.log('处理后的角色数据:', cleanedRoles);
       console.log('角色数量:', cleanedRoles.length);
-      
+
       return cleanedRoles;
     } catch (error: any) {
       console.error('获取角色数据失败:', error);
@@ -155,7 +155,7 @@ export const createRole = createAsyncThunk(
     try {
       console.log('正在创建角色:', roleData);
       const res = await axiosInstance.post('/roles', roleData);
-      
+
       if (res.data.code === 200) {
         console.log('角色创建成功:', res.data.data);
         // 创建成功后重新获取所有角色数据，确保同步
@@ -178,7 +178,7 @@ export const updateRole = createAsyncThunk(
     try {
       console.log('正在更新角色:', id, roleData);
       const res = await axiosInstance.put(`/roles/${id}`, roleData);
-      
+
       if (res.data.code === 200) {
         console.log('角色更新成功:', res.data.data);
         // 更新成功后重新获取所有角色数据，确保同步
@@ -201,7 +201,7 @@ export const deleteRole = createAsyncThunk(
     try {
       console.log('正在删除角色:', roleId);
       const res = await axiosInstance.delete(`/roles/${roleId}`);
-      
+
       if (res.data.code === 200) {
         console.log('角色删除成功');
         // 删除成功后重新获取所有角色数据，确保同步
@@ -222,6 +222,7 @@ export interface RolesState {
   loading: boolean;
   error: string | null;
   lastUpdated: number | null; // 添加最后更新时间戳
+  roleTreeVersion: number
 }
 
 const initialState: RolesState = {
@@ -229,6 +230,7 @@ const initialState: RolesState = {
   loading: false,
   error: null,
   lastUpdated: null,
+  roleTreeVersion: 0,
 };
 
 const rolesSlice = createSlice({
@@ -244,6 +246,11 @@ const rolesSlice = createSlice({
       state.roles = [];
       state.error = null;
       state.lastUpdated = null;
+    },
+    incrementRoleTreeVersion(state) {
+      console.log('roleTreeVersion 旧值:', state.roleTreeVersion);
+      state.roleTreeVersion += 1;
+      console.log('roleTreeVersion 新值:', state.roleTreeVersion);
     }
   },
   extraReducers: (builder) => {
@@ -265,7 +272,7 @@ const rolesSlice = createSlice({
         state.error = action.payload as string;
         state.loading = false;
       })
-      
+
       // 创建角色
       .addCase(createRole.pending, (state) => {
         state.loading = true;
@@ -279,7 +286,7 @@ const rolesSlice = createSlice({
         state.error = action.payload as string;
         state.loading = false;
       })
-      
+
       // 更新角色
       .addCase(updateRole.pending, (state) => {
         state.loading = true;
@@ -293,7 +300,7 @@ const rolesSlice = createSlice({
         state.error = action.payload as string;
         state.loading = false;
       })
-      
+
       // 删除角色
       .addCase(deleteRole.pending, (state) => {
         state.loading = true;
@@ -310,7 +317,7 @@ const rolesSlice = createSlice({
   },
 });
 
-export const { clearError, resetRoles } = rolesSlice.actions;
+export const { clearError, resetRoles, incrementRoleTreeVersion } = rolesSlice.actions;
 export default rolesSlice.reducer;
 
 // Selectors

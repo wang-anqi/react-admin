@@ -121,9 +121,12 @@ router.post('/', (req: Request, res: Response) => {
   
     for (const role of roles) {
       const item = { title: role.description, key: role.name };
-      if (['admin', 'manager', 'managerBoss'].includes(role.name)) {
+
+      const isManager =['admin', 'manager', 'managerBoss'].includes(role.name) || role.name.startsWith('manager_')
+      const isUser = ['user','userBoss'].includes(role.name) || role.name.startsWith('user_')
+      if (isManager) {
         result[0].children?.push(item);
-      } else if (role.name === 'user') {
+      } else if (isUser) {
         result[1].children?.push(item);
       }
     }
