@@ -1,175 +1,96 @@
-// src/pages/Dashboard/components/PieChart.tsx
-import React, { useEffect, useRef } from 'react';
-import * as echarts from 'echarts/core';
-import { PieChart as EPieChart } from 'echarts/charts';
-import {
-  TooltipComponent,
-  LegendComponent,
-  TitleComponent
-} from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
-import { Spin } from 'antd';
+import React, {
+  useRef,
+  useEffect,
+  forwardRef,
+  useImperativeHandle
+} from 'react';
+import * as echarts from 'echarts';
 
-// 注册必须的组件
-echarts.use([
-  EPieChart,
-  TooltipComponent,
-  LegendComponent,
-  TitleComponent,
-  CanvasRenderer
-]);
-
-interface PieData {
-  name: string;
-  value: number;
-  color?: string;
-}
 
 interface PieChartProps {
-  data: PieData[];
+  data: Array<{
+    name: string;
+    value: number;
+    color: string;
+  }>;
   loading?: boolean;
+  height?: number;
+}
+// 定义暴露给父组件的方法接口
+export interface ChartRef {
+  getChartInstance: () => echarts.ECharts | null;
 }
 
-const PieChart: React.FC<PieChartProps> = ({ data, loading }) => {
-  const chartRef = useRef<HTMLDivElement>(null);
-  const chartInstance = useRef<echarts.ECharts | null>(null);
+const PieChart = forwardRef<ChartRef, PieChartProps>(
+  ({ data, loading = false, height = 400 }, ref) => {
+    const chartRef = useRef<HTMLDivElement>(null);
+    const chartInstance = useRef<echarts.ECharts | null>(null);
 
-  useEffect(() => {
-    if (!chartRef.current) return;
-    
-    // 初始化图表
-    chartInstance.current = echarts.init(chartRef.current);
-    
-    // 清理函数
-    return () => {
-      if (chartInstance.current) {
-        chartInstance.current.dispose();
+    useImperativeHandle(ref, () => ({
+      getChartInstance: () => chartInstance.current,
+    }));
+
+    useEffect(() => {
+      if (!chartRef.current) return;
+      chartInstance.current = echarts.init(chartRef.current);
+
+      const handleResize = () => chartInstance.current?.resize();
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        chartInstance.current?.dispose();
         chartInstance.current = null;
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!chartInstance.current || loading) return;
-    
-    // 数据验证和处理
-    if (!data || !Array.isArray(data)) {
-      console.warn('PieChart: 数据格式错误', data);
-      return;
-    }
-
-    // 过滤有效数据
-    const validData = data.filter(item => {
-      return item && 
-             typeof item.name === 'string' && 
-             typeof item.value === 'number' && 
-             !isNaN(item.value) && 
-             item.value >= 0;
-    });
-
-    // 如果没有有效数据，显示空状态
-    if (validData.length === 0) {
-      const emptyOption = {
-        title: {
-          text: '暂无数据',
-          left: 'center',
-          top: 'middle',
-          textStyle: {
-            fontSize: 16,
-            color: '#999'
-          }
-        }
       };
-      chartInstance.current.setOption(emptyOption);
-      return;
-    }
-    
-    const option = {
-      title: { 
-        text: '数据占比分析',
-        left: 'center',
-        textStyle: {
-          fontSize: 16,
-          fontWeight: 'bold'
-        }
-      },
-      tooltip: {
-        trigger: 'item',
-        formatter: '{a} <br/>{b}: {c} ({d}%)'
-      },
-      legend: {
-        orient: 'vertical',
-        left: 'left',
-        data: validData.map(item => item.name)
-      },
-      series: [{
-        name: '占比',
-        type: 'pie',
-        radius: ['40%', '70%'],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 10,
-          borderColor: '#fff',
-          borderWidth: 2
+    }, []);
+
+    useEffect(() => {
+      if (!chartInstance.current || data.length === 0) return;
+
+      const option = {
+        title: {
+          text: '结构占比',
+          left: 'center',
+          textStyle: { fontSize: 16, fontWeight: 'bold' }
         },
-        label: {
-          show: false,
-          position: 'center'
+        tooltip: {
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c} ({d}%)'
         },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: '18',
-            fontWeight: 'bold'
+        legend: {
+          orient: 'vertical',
+          left: 'left',
+          top: 'center',
+          data: data.map(item => item.name)
+        },
+        series: [
+          {
+            name: '占比',
+            type: 'pie',
+            radius: ['40%', '70%'],
+            center: ['60%', '50%'],
+            data: data.map(item => ({
+              value: item.value,
+              name: item.name,
+              itemStyle: { color: item.color }
+            }))
           }
-        },
-        labelLine: {
-          show: false
-        },
-        data: validData.map((item, index) => ({
-          name: item.name,
-          value: item.value,
-          itemStyle: item.color ? {
-            color: item.color
-          } : undefined
-        }))
-      }]
-    };
+        ]
+      };
 
-    try {
-      chartInstance.current.setOption(option);
-    } catch (error) {
-      console.error('PieChart: 设置图表选项时出错', error);
-    }
-    
-    // 响应式调整
-    const resizeHandler = () => {
-      if (chartInstance.current) {
-        chartInstance.current.resize();
-      }
-    };
-    
-    window.addEventListener('resize', resizeHandler);
-    
-    return () => {
-      window.removeEventListener('resize', resizeHandler);
-    };
-  }, [data, loading]);
+      chartInstance.current.setOption(option, true);
+    }, [data]);
 
-  if (loading) {
+    useEffect(() => {
+      if (!chartInstance.current) return;
+      loading ? chartInstance.current.showLoading() : chartInstance.current.hideLoading();
+    }, [loading]);
+
     return (
-      <div style={{ 
-        height: 300, 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center' 
-      }}>
-        <Spin tip="加载数据..." />
-      </div>
+      <div ref={chartRef} style={{ width: '100%', height: `${height}px` }} />
     );
   }
+);
 
-  return <div ref={chartRef} style={{ height: 300, width: '100%' }} />;
-};
-
+PieChart.displayName = 'PieChart';
 export default PieChart;

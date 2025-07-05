@@ -38,6 +38,12 @@ src/
 
 2. **本地开发启动**
 
+  后台服务器开启
+  ```bash
+  npm run dev
+  ```
+
+
    ```bash
    yarn dev
    ```

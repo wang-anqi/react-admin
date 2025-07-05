@@ -186,6 +186,11 @@ const Charts: React.FC = () => {
   const [dateRange, setDateRange] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
+  // 添加图表引用
+  const lineChartRef = useRef<any>(null);
+  const pieChartRef = useRef<any>(null);
+  const barChartRef = useRef<any>(null);
+  
   // 用户列表相关状态
   const [users] = useState<User[]>(() => generateMockUsers(1000));
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -257,15 +262,59 @@ const Charts: React.FC = () => {
     }, 1000);
   };
 
-  // 导出图片
-  const handleExportImage = () => {
-    message.success('图表已导出为图片');
-  };
+  // 实现导出图片功能
+  const handleExportImage = useCallback(() => {
+    try {
+      let chartInstance = null;
+      let fileName = '';
 
-  // 导出Excel
-  const handleExportExcel = () => {
-    message.success('数据已导出为Excel');
-  };
+      // 根据当前活跃的tab获取对应的图表实例
+      switch (activeTab) {
+        case 'line':
+          chartInstance = lineChartRef.current?.getChartInstance?.();
+          fileName = `趋势分析图_${new Date().toISOString().slice(0, 10)}.png`;
+          break;
+        case 'pie':
+          chartInstance = pieChartRef.current?.getChartInstance?.();
+          fileName = `结构占比图_${new Date().toISOString().slice(0, 10)}.png`;
+          break;
+        case 'bar':
+          chartInstance = barChartRef.current?.getChartInstance?.();
+          fileName = `对比分析图_${new Date().toISOString().slice(0, 10)}.png`;
+          break;
+        default:
+          message.error('无法获取图表实例');
+          return;
+      }
+
+      if (!chartInstance) {
+        message.error('图表尚未加载完成，请稍后再试');
+        return;
+      }
+
+      // 获取图表的base64数据
+      const base64 = chartInstance.getDataURL({
+        type: 'png',
+        pixelRatio: 2, // 提高图片质量
+        backgroundColor: '#fff' // 设置背景色
+      });
+
+      // 创建下载链接
+      const link = document.createElement('a');
+      link.href = base64;
+      link.download = fileName;
+      
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      message.success('图表已成功导出为图片');
+    } catch (error) {
+      console.error('导出图片失败:', error);
+      message.error('导出图片失败，请重试');
+    }
+  }, [activeTab]);
   
   // 刷新用户列表
   const handleRefreshUsers = () => {
@@ -340,12 +389,6 @@ const Charts: React.FC = () => {
             >
               导出图片
             </Button>
-            <Button 
-              onClick={handleExportExcel}
-              icon={<span role="img" aria-label="excel">📊</span>}
-            >
-              导出Excel
-            </Button>
           </Space>
         </Col>
       </Row>
@@ -364,6 +407,7 @@ const Charts: React.FC = () => {
             </div>
           }>
             <LineChart 
+              ref={lineChartRef}
               data={chartData?.lineData || []} 
               loading={loading}
             />
@@ -377,6 +421,7 @@ const Charts: React.FC = () => {
             </div>
           }>
             <PieChart 
+              ref={pieChartRef}
               data={chartData?.pieData || []} 
               loading={loading}
             />
@@ -390,6 +435,7 @@ const Charts: React.FC = () => {
             </div>
           }>
             <BarChart 
+              ref={barChartRef}
               data={chartData?.barData || { xAxisData: [], seriesData: [] }} 
               loading={loading}
             />
