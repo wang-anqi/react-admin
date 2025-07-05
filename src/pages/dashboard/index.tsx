@@ -537,6 +537,43 @@ const getMockDashboardData = (timeRange: string) => {
   };
 
   const currentData = baseData[timeRange as keyof typeof baseData] || baseData.week;
+  
+  const generateHeatmapData = (): { date: string; hour: number; value: number }[] => {
+    const dayMap = {
+      'Mon': '2024-06-17',
+      'Tue': '2024-06-18',
+      'Wed': '2024-06-19',
+      'Thu': '2024-06-20',
+      'Fri': '2024-06-21',
+      'Sat': '2024-06-22',
+      'Sun': '2024-06-23'
+    };
+    
+    const data = [];
+    const days = Object.keys(dayMap);
+  
+    for (const day of days) {
+      for (let hour = 0; hour < 24; hour++) {
+        let value = 0;
+        if (hour >= 9 && hour <= 18) {
+          value = Math.floor(Math.random() * 40 + 60); // 白天：60-100
+        } else if (hour >= 20 && hour <= 23) {
+          value = Math.floor(Math.random() * 30 + 30); // 晚间：30-60
+        } else {
+          value = Math.floor(Math.random() * 20 + 5);  // 其他：5-25
+        }
+  
+        data.push({
+          date: dayMap[day],
+          hour,
+          value
+        });
+      }
+    }
+  
+    return data;
+  };
+  
 
   // 原始数据
   const rawBarData = [
@@ -618,24 +655,7 @@ const getMockDashboardData = (timeRange: string) => {
       }))
     }],
     // 转换为HeatmapChart期望的格式
-    heatmapData: rawHeatmapData.map(item => {
-      // 将day转换为具体的日期
-      const dayMap: { [key: string]: string } = {
-        'Mon': '2024-06-17',
-        'Tue': '2024-06-18',
-        'Wed': '2024-06-19',
-        'Thu': '2024-06-20',
-        'Fri': '2024-06-21',
-        'Sat': '2024-06-22',
-        'Sun': '2024-06-23'
-      };
-      
-      return {
-        date: dayMap[item.day] || '2024-06-17',
-        hour: item.hour,
-        value: item.value
-      };
-    })
+    heatmapData:generateHeatmapData(),
   };
 };
 
