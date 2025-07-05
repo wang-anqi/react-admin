@@ -16,7 +16,8 @@
       "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "role": "user",
       "status": "active",
-      "createdAt": "2025-06-17T06:43:11.759Z"
+      "createdAt": "2025-06-17T06:43:11.759Z",
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6InVzZXJzTWVtYmVyLTAwMyIsInVzZXJuYW1lIjoidXNlciIsInJvbGUiOiJ1c2VyIiwiaWF0IjoxNzUxNjg5OTQwLCJleHAiOjE3NTE3NzYzNDB9.nlopH-Wq0IchPmxKrjJM2Q_Gj049AN_bGinTctqecX4"
     },
     {
       "id": "admin-001",
@@ -26,7 +27,7 @@
       "password": "$2a$10$kQ2h7ZFFuSA80GTdRAxim.J1018STi9xqRIGFwsjXa77WI6hPM8Qm",
       "status": "active",
       "createdAt": "2025-06-17T06:43:11.600Z",
-      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTA3NzA2NTUsImV4cCI6MTc1MDg1NzA1NX0.8mhQmYe75wifu_ldg1BLRY6K_W_GRFrUdTRPr7MHXeQ"
+      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImFkbWluLTAwMSIsInVzZXJuYW1lIjoiYWRtaW4iLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3NTE2OTI1NTksImV4cCI6MTc1MTc3ODk1OX0.qRDppKWcHMKBkeejGu1IOP-5JHgzZoI3mcqtZ9gORIA"
     },
     {
       "id": "userManage-1750577251273-j3z0kjguk",
